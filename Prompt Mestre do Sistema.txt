@@ -1,0 +1,2454 @@
+# PROMPT MESTRE DEFINITIVO — SECJESSICA
+## Plataforma SaaS completa de secretariado remoto, gestão empresarial, CRM e agenda inteligente
+
+**INSTRUÇÃO PRINCIPAL: LEIA TODO ESTE DOCUMENTO ANTES DE COMEÇAR A IMPLEMENTAR.**
+
+Quero que você atue como uma equipe sênior de desenvolvimento de software responsável por projetar, implementar, testar, documentar e preparar para publicação um sistema web profissional chamado **SecJessica**.
+
+Você deverá atuar simultaneamente como arquiteto de software, desenvolvedor full-stack, engenheiro de banco de dados, especialista em segurança, designer UI/UX, engenheiro de testes, especialista em integrações Google, especialista em infraestrutura de nuvem e consultor de documentação jurídica e comercial.
+
+Não quero somente uma proposta, um planejamento, uma demonstração, um protótipo visual ou telas sem funcionamento.
+
+Quero que você desenvolva um produto real, com frontend funcional, backend verdadeiro, banco de dados persistente, autenticação, controle de permissões, isolamento entre empresas, integrações externas, testes, documentação e preparação para implantação.
+
+Trabalhe diretamente no ambiente de programação disponibilizado por esta IA, quando houver. Crie e modifique arquivos, execute comandos, instale dependências, aplique migrações, execute testes e corrija os problemas encontrados.
+
+Se algum serviço externo depender de credenciais, autorização ou intervenção minha, implemente toda a parte técnica possível e me oriente objetivamente sobre como concluir a configuração. Não invente credenciais, não alegue que uma integração foi testada quando isso não ocorreu e não declare o sistema publicado sem verificar a implantação real.
+
+---
+
+# PARTE 1 — IDENTIDADE E OBJETIVO DO PRODUTO
+
+## 1.1. Nome oficial
+
+Nome exato: **SecJessica**
+
+Utilize essa grafia em todo o projeto, incluindo:
+- Interface.
+- Página inicial.
+- Painéis.
+- Títulos.
+- Documentação.
+- Metadados.
+- Arquivos institucionais.
+- Identificação da aplicação.
+- Mensagens de e-mail.
+- Telas de autenticação.
+- Configurações de implantação.
+- Material comercial.
+- Documentação técnica.
+
+Não utilize nomes alternativos ou grafias incorretas do sistema.
+
+## 1.2. Responsável pelo projeto
+
+Dados informados pelo responsável:
+
+- Nome: Vitor Hugo Abreu de Sousa.
+- Telefone: (24) 98821-2712.
+- E-mail: vitorhugo1@gmail.com.
+
+Esses dados podem ser utilizados em documentação de autoria, metadados internos e configurações administrativas quando apropriado.
+
+Não publique automaticamente informações pessoais em páginas públicas, logs, repositórios ou metadados. Disponibilize configurações editáveis para definir quais contatos comerciais poderão ser divulgados.
+
+Não invente CNPJ, razão social, endereço comercial, registro de marca, certificações, assinatura eletrônica, representante legal ou informações societárias.
+
+## 1.3. Definição do sistema
+
+O SecJessica será uma plataforma SaaS de gestão de secretariado remoto que permita administrar diversas empresas e profissionais de diferentes setores em uma única instalação.
+
+A responsável pelo secretariado poderá atender diversos clientes comerciais simultaneamente, sem misturar os dados de cada empresa.
+
+Exemplos de empresas atendidas:
+
+- Clínicas de psicologia.
+- Consultórios odontológicos.
+- Clínicas médicas.
+- Escritórios de advocacia.
+- Escolas.
+- Cursos profissionalizantes.
+- Prestadores de serviços.
+- Profissionais autônomos.
+- Consultórios e escritórios particulares.
+- Pequenas e médias empresas.
+- Outros negócios administrativos.
+
+Cada empresa deverá possuir configurações, usuários, permissões, contatos, agendas, serviços, profissionais, tarefas e relatórios próprios.
+
+O sistema deverá permitir cadastrar novas empresas sem exigir a criação de uma nova instalação, um novo repositório ou um novo banco de dados para cada contratante.
+
+## 1.4. Objetivo operacional
+
+A Jéssica deverá conseguir, por meio de uma única plataforma:
+
+1. Cadastrar uma nova empresa contratante.
+2. Escolher um modelo de configuração adequado ao segmento.
+3. Configurar os horários de funcionamento.
+4. Cadastrar serviços.
+5. Cadastrar profissionais e membros da equipe.
+6. Conectar o Google Agenda autorizado pela empresa.
+7. Configurar usuários e permissões.
+8. Cadastrar contatos.
+9. Criar e administrar agendamentos.
+10. Gerenciar tarefas administrativas.
+11. Registrar interações.
+12. Preparar mensagens de atendimento.
+13. Consultar relatórios.
+14. Gerenciar pendências.
+15. Desativar ou encerrar o acesso de uma empresa quando necessário.
+16. Atender novos clientes sem reconstruir a aplicação.
+
+O sistema precisa ser simples para uso cotidiano, mas tecnicamente sólido, seguro, escalável e sustentável.
+
+---
+
+# PARTE 2 — ARQUITETURA E TECNOLOGIAS
+
+## 2.1. Stack tecnológica preferencial
+
+Utilize tecnologias estáveis e suportadas no momento da implementação. Antes de instalar pacotes, verifique a compatibilidade das versões na documentação oficial.
+
+Frontend e aplicação:
+- Next.js com App Router.
+- React.
+- TypeScript com configuração strict.
+- Tailwind CSS.
+- shadcn/ui ou biblioteca equivalente de componentes acessíveis.
+- Lucide para ícones.
+- React Hook Form para formulários.
+- Zod para validação.
+- Biblioteca de calendário confiável e adequada às necessidades da agenda.
+- Biblioteca de tabelas quando necessária.
+- Componentes reutilizáveis.
+
+Backend:
+- Backend com Next.js Route Handlers e Server Actions quando apropriado.
+- Serviços de domínio separados das interfaces.
+- Validações no servidor.
+- Controle de autorização em todas as operações protegidas.
+- Tratamento padronizado de erros.
+- Processamento assíncrono apropriado para operações externas.
+- APIs documentadas.
+
+Banco de dados:
+- Supabase PostgreSQL.
+- Supabase Auth.
+- Row Level Security.
+- Migrações SQL versionadas.
+- Índices e restrições de integridade.
+- Backups.
+- Procedimentos de restauração.
+- Políticas de retenção de dados.
+
+Hospedagem:
+- Vercel para aplicação web.
+- Supabase para banco de dados, autenticação e recursos associados.
+- Google Cloud para a integração OAuth e Google Calendar API.
+- Provedor de e-mail transacional configurável.
+- Monitoramento de erros e disponibilidade.
+
+Ferramentas de desenvolvimento:
+- Git.
+- ESLint.
+- Prettier.
+- Vitest ou ferramenta equivalente para testes unitários.
+- Playwright para testes ponta a ponta.
+- Ferramentas adequadas para testes de integração.
+- CI/CD quando o ambiente permitir.
+
+Não escolha tecnologias adicionais sem uma justificativa técnica clara.
+
+## 2.2. Regras arquiteturais
+
+Separe adequadamente:
+
+- Apresentação.
+- Componentes de interface.
+- Regras de negócio.
+- Autenticação.
+- Autorização.
+- Persistência.
+- Integrações externas.
+- Processamento assíncrono.
+- Auditoria.
+- Observabilidade.
+
+Não coloque toda a lógica em um único arquivo.
+
+Não utilize arrays em memória, JSON local, localStorage ou sessionStorage como banco de dados da aplicação.
+
+Não simule persistência comercial.
+
+Não confie em dados enviados pelo navegador para decidir permissões.
+
+Não permita operações de escrita ou leitura privilegiadas diretamente pelo frontend.
+
+Não use chaves administrativas do Supabase no navegador.
+
+Evite complexidade desnecessária, mas desenvolva uma arquitetura organizada, testável e preparada para manutenção.
+
+## 2.3. Ambientes
+
+Prepare pelo menos:
+
+- Desenvolvimento.
+- Testes ou homologação.
+- Produção.
+
+Separe configurações, chaves, URLs autorizadas, bancos e credenciais por ambiente.
+
+Não use dados reais de clientes nos testes.
+
+Não aplique migrações destrutivas em produção automaticamente.
+
+Crie documentação para mudanças de esquema, restauração, rollback e implantação.
+
+---
+
+# PARTE 3 — MODELO MULTIEMPRESA
+
+## 3.1. Requisito fundamental
+
+O SecJessica deverá implementar uma arquitetura multi-tenant com isolamento de dados no banco de dados e no backend.
+
+Cada empresa será uma organização independente dentro da mesma aplicação.
+
+O isolamento não poderá depender apenas de filtros visuais ou parâmetros enviados pelo navegador.
+
+Todo acesso a dados de uma organização deverá verificar:
+- Identidade do usuário autenticado.
+- Associação do usuário à organização.
+- Função e permissões.
+- Organização proprietária do registro.
+- Estado ativo da conta e da associação.
+- Autorização específica para a operação.
+
+Implemente Supabase RLS nas tabelas multiempresa aplicáveis.
+
+Inclua testes que tentem acessar dados de outra organização modificando IDs, URLs, parâmetros, requisições, filtros e exportações.
+
+Uma requisição não autorizada deverá ser negada mesmo que o usuário descubra um identificador válido de outro registro.
+
+## 3.2. Painel da secretária
+
+A Jéssica terá um painel central administrativo que permitirá:
+
+- Visualizar as empresas que atende.
+- Cadastrar empresas.
+- Editar configurações das organizações às quais possui autorização.
+- Consultar os compromissos administrativos autorizados.
+- Criar tarefas.
+- Acompanhar tarefas pendentes.
+- Consultar notificações.
+- Gerenciar convites.
+- Consultar falhas de integração.
+- Acompanhar indicadores operacionais.
+- Acessar rapidamente uma empresa.
+- Alternar de uma organização para outra.
+- Revisar pendências.
+- Gerenciar preferências pessoais.
+
+Deverá haver uma identificação visual evidente da empresa ativa.
+
+Ao alternar de empresa, todos os dados, menus, consultas, ações e permissões precisam ser atualizados.
+
+Nunca deixe dados da empresa anterior visíveis por cache indevido, estado residual da interface ou consultas não invalidadas.
+
+A visão consolidada deverá apresentar somente informações que o usuário esteja autorizado a visualizar em cada organização.
+
+## 3.3. Painel da empresa contratante
+
+Cada empresa deverá possuir seu próprio ambiente administrativo.
+
+Seus usuários poderão acessar:
+- Dados da própria empresa.
+- Contatos autorizados.
+- Agendamentos autorizados.
+- Profissionais e serviços.
+- Configurações próprias.
+- Relatórios autorizados.
+- Usuários da própria organização, conforme a função.
+- Integração com o Google Agenda.
+- Histórico administrativo permitido.
+
+A empresa não poderá consultar registros de outro contratante.
+
+O painel deverá exibir a identidade visual, o nome e as configurações específicas da empresa.
+
+## 3.4. Cadastro de nova empresa
+
+Desenvolva um assistente de configuração inicial.
+
+Etapas:
+
+1. Identificação e nome da organização.
+2. Segmento comercial.
+3. Dados de contato.
+4. Identidade visual.
+5. Fuso horário.
+6. Horários de funcionamento.
+7. Serviços.
+8. Profissionais.
+9. Usuários.
+10. Permissões.
+11. Integração com o Google Agenda.
+12. Preferências de comunicação.
+13. Configurações de privacidade.
+14. Revisão final.
+
+Permita salvar rascunhos de configuração quando apropriado.
+
+Exiba progresso, validações e pendências.
+
+A empresa somente deverá ser considerada operacionalmente configurada quando os requisitos obrigatórios do seu fluxo tiverem sido concluídos.
+
+Não bloqueie a criação da empresa pela ausência de uma integração opcional. Permita concluir sua configuração e apresentar os itens ainda pendentes.
+
+## 3.5. Modelos por segmento
+
+Crie modelos reutilizáveis para:
+
+- Psicologia.
+- Odontologia.
+- Serviços médicos administrativos.
+- Advocacia.
+- Escolas.
+- Serviços gerais.
+
+Os modelos deverão configurar os campos administrativos, os serviços genéricos, os filtros e as preferências pertinentes.
+
+Não copie contatos, dados pessoais, histórico, compromissos ou informações de outra empresa ao aplicar um modelo.
+
+Não invente obrigações legais ou profissionais específicas.
+
+Não crie automaticamente prontuários médicos, psicológicos ou jurídicos.
+
+---
+
+# PARTE 4 — USUÁRIOS, LOGIN E PERMISSÕES
+
+## 4.1. Autenticação
+
+Utilize Supabase Auth.
+
+Implemente:
+- Login por e-mail e senha.
+- Cadastro autorizado.
+- Confirmação de e-mail.
+- Recuperação de senha.
+- Redefinição de senha.
+- Logout.
+- Sessões seguras.
+- Renovação de sessão.
+- Tratamento de expiração.
+- Revogação de acesso.
+- Rate limiting.
+- Validação de formulários.
+- Mensagens de erro compreensíveis.
+- Proteção contra enumeração de contas.
+- Opção de autenticação multifator para funções administrativas.
+- Tratamento de contas desativadas.
+
+Utilize um padrão de sessão recomendado pela integração oficial do Supabase com Next.js, com cookies seguros e validação de identidade no servidor.
+
+Não use a simples presença de uma sessão no navegador como prova suficiente de autorização.
+
+A sessão deve ser validada no servidor conforme as recomendações da versão utilizada.
+
+## 4.2. Primeiro administrador
+
+Crie um procedimento seguro para provisionar o primeiro administrador.
+
+Pode ser utilizado um comando operacional protegido, uma configuração temporária controlada ou um procedimento administrativo documentado.
+
+O procedimento deverá:
+- Ser executado somente em contexto autorizado.
+- Validar o ambiente.
+- Garantir que somente o responsável autorizado possa receber a função inicial.
+- Ser documentado.
+- Não ficar exposto como endpoint público.
+- Não aceitar um e-mail arbitrário para conceder privilégios.
+- Não permitir recriação indevida de privilégios a cada execução.
+
+Não implemente uma conta administrativa padrão com senha conhecida.
+
+Não permita que qualquer pessoa que acesse a página pública se torne administradora global.
+
+## 4.3. Convites de usuários
+
+A secretária ou um administrador autorizado deverá poder convidar usuários.
+
+Fluxo:
+1. Informar o e-mail.
+2. Escolher organização.
+3. Definir a função.
+4. Configurar permissões compatíveis.
+5. Enviar convite.
+6. Registrar o estado do convite.
+7. Permitir aceitação pelo destinatário autorizado.
+8. Expirar convites vencidos.
+9. Cancelar convites.
+10. Reenviar convites quando permitido.
+
+Convites deverão ser seguros, expirar, ser de uso único e não permitir elevação de privilégios.
+
+Não revele se endereços de e-mail existem no sistema por meio de mensagens públicas desnecessariamente detalhadas.
+
+## 4.4. Funções
+
+Implemente inicialmente:
+
+- Administrador da plataforma.
+- Secretária.
+- Administrador da organização.
+- Atendente.
+- Profissional.
+- Usuário de consulta.
+
+Permita adicionar funções configuráveis no futuro.
+
+Funções e permissões devem ser armazenadas e controladas de forma segura.
+
+O usuário não poderá elevar seus próprios privilégios.
+
+## 4.5. Permissões granulares
+
+Permita controlar ações como:
+
+- Visualizar organização.
+- Editar organização.
+- Gerenciar usuários.
+- Gerenciar permissões.
+- Visualizar contatos.
+- Criar contatos.
+- Editar contatos.
+- Arquivar contatos.
+- Exportar contatos.
+- Visualizar agenda.
+- Criar agendamentos.
+- Editar agendamentos.
+- Cancelar agendamentos.
+- Visualizar tarefas.
+- Administrar tarefas.
+- Consultar relatórios.
+- Exportar relatórios.
+- Configurar integrações.
+- Gerenciar arquivos.
+- Consultar logs de auditoria.
+
+Implemente autorização granular no servidor e políticas RLS compatíveis no banco de dados.
+
+---
+
+# PARTE 5 — BANCO DE DADOS
+
+## 5.1. Modelo relacional
+
+Projete um banco de dados normalizado, documentado e preparado para evolução.
+
+Considere pelo menos as seguintes entidades:
+
+- profiles.
+- organizations.
+- organization_members.
+- organization_invitations.
+- organization_settings.
+- roles.
+- permissions.
+- role_permissions.
+- contacts.
+- contact_tags.
+- contact_tag_assignments.
+- custom_field_definitions.
+- custom_field_values.
+- services.
+- professionals.
+- professional_services.
+- calendars.
+- calendar_connections.
+- calendar_event_mappings.
+- appointments.
+- appointment_participants, se necessário.
+- tasks.
+- task_comments.
+- message_templates.
+- notification_preferences.
+- notifications.
+- files_metadata.
+- audit_logs.
+- integration_jobs.
+- data_subject_requests.
+- data_retention_rules, quando necessário.
+- billing_customers e subscriptions, somente se a cobrança for implementada.
+
+Adapte as entidades conforme os fluxos efetivamente implementados.
+
+## 5.2. Regras de implementação
+
+Para cada tabela, defina:
+- Chave primária.
+- Chaves estrangeiras.
+- Índices.
+- Restrições.
+- Regras de unicidade.
+- Tipos de dados corretos.
+- Datas de criação e atualização.
+- Regras de exclusão.
+- Políticas de acesso.
+- Relação com a organização proprietária.
+
+Use UUIDs ou identificadores equivalentes apropriados.
+
+Use timestamps consistentes.
+
+Armazene os horários de compromissos de forma que permitam comparação e sincronização corretas entre fusos horários.
+
+Use identificadores explícitos para relacionar eventos locais aos eventos remotos do Google.
+
+Não presuma que o identificador de um evento externo é globalmente único sem considerar a conta e o calendário envolvidos.
+
+Implemente restrições únicas e estratégias de idempotência para operações que não possam criar duplicatas.
+
+Evite exclusão em cascata indiscriminada.
+
+Defina quais registros poderão ser eliminados, arquivados ou anonimizados e quais precisam ser preservados por razões justificadas.
+
+## 5.3. Migrações
+
+Crie migrações SQL versionadas em uma pasta própria.
+
+Inclua:
+- Criação de tabelas.
+- Índices.
+- Restrições.
+- Funções necessárias.
+- Triggers necessários.
+- Políticas RLS.
+- Permissões.
+- Seeds de desenvolvimento.
+- Estratégia de atualização.
+- Instruções de execução.
+- Procedimentos de reversão, quando seguros.
+
+Não dependa de alterações manuais não documentadas no painel do Supabase.
+
+O banco deverá poder ser recriado em um ambiente novo por meio das migrações versionadas.
+
+---
+
+# PARTE 6 — CRM E CONTATOS
+
+## 6.1. Funcionalidades
+
+Crie um CRM administrativo completo para cada organização.
+
+Permita:
+- Cadastrar contatos.
+- Editar contatos.
+- Consultar detalhes.
+- Pesquisar.
+- Filtrar.
+- Ordenar.
+- Paginar.
+- Arquivar.
+- Restaurar.
+- Excluir quando permitido.
+- Identificar possíveis duplicidades.
+- Mesclar duplicados de forma controlada.
+- Importar CSV.
+- Exportar CSV.
+- Criar tags.
+- Associar contatos a serviços.
+- Definir responsável pelo atendimento.
+- Registrar atividades administrativas.
+- Agendar próximos contatos.
+
+## 6.2. Campos
+
+Inclua, conforme a necessidade:
+- Nome.
+- Nome social, quando pertinente.
+- E-mail.
+- Telefone.
+- WhatsApp.
+- Empresa ou organização.
+- Tipo de contato.
+- Origem.
+- Status.
+- Tags.
+- Preferências de comunicação.
+- Responsável.
+- Data de cadastro.
+- Última interação administrativa.
+- Próxima ação.
+- Observações administrativas autorizadas.
+
+Campos adicionais devem ser configuráveis por organização e validados de acordo com seus tipos.
+
+Não torne CPF, informações de saúde, documentos pessoais ou informações sensíveis campos obrigatórios universais.
+
+Não guarde senhas, dados de cartão ou outras informações incompatíveis com a finalidade do CRM.
+
+## 6.3. Histórico
+
+Permita registrar informações administrativas relevantes, com:
+- Data.
+- Tipo de interação.
+- Responsável.
+- Resultado.
+- Próxima ação.
+
+Não registre automaticamente conteúdos confidenciais de consultas, sessões psicológicas ou conversas jurídicas.
+
+Controle o acesso ao histórico conforme a função e a finalidade de trabalho.
+
+---
+
+# PARTE 7 — AGENDA E AGENDAMENTOS
+
+## 7.1. Calendário interno
+
+Crie uma agenda visual e funcional com:
+
+- Visualização diária.
+- Visualização semanal.
+- Visualização mensal.
+- Lista cronológica.
+- Agenda por profissional.
+- Agenda por serviço.
+- Agenda por empresa.
+- Visão consolidada autorizada.
+- Filtros por status.
+- Filtros por profissional.
+- Filtros por serviço.
+- Busca de compromissos.
+- Navegação entre datas.
+- Criação rápida.
+- Edição.
+- Cancelamento.
+- Reagendamento.
+
+## 7.2. Dados de cada agendamento
+
+Considere:
+- Organização.
+- Contato.
+- Profissional.
+- Serviço.
+- Data e hora inicial.
+- Data e hora final.
+- Fuso horário.
+- Estado.
+- Local ou link da reunião.
+- Observações administrativas autorizadas.
+- Origem do agendamento.
+- Identificador externo do evento.
+- Estado de sincronização.
+- Usuário que criou o compromisso.
+- Data de criação e atualização.
+
+Estados iniciais:
+- Pendente de confirmação.
+- Confirmado.
+- Concluído.
+- Cancelado.
+- Não compareceu.
+- Reagendado.
+
+## 7.3. Validação de conflitos
+
+Implemente verificações no servidor.
+
+Considere:
+- Profissional.
+- Serviço.
+- Duração.
+- Intervalo entre compromissos.
+- Recursos compartilhados.
+- Horários de funcionamento.
+- Férias ou bloqueios administrativos.
+- Eventos externos sincronizados.
+- Operações concorrentes.
+- Fusos horários.
+
+Não confie somente na verificação do navegador.
+
+Implemente mecanismos adequados de consistência no banco de dados, incluindo transações ou restrições quando aplicáveis.
+
+Apresente avisos compreensíveis quando houver conflito.
+
+Permita que usuários autorizados tratem exceções de acordo com regras configuradas, registrando a decisão no histórico.
+
+---
+
+# PARTE 8 — INTEGRAÇÃO INDIVIDUAL COM GOOGLE AGENDA
+
+## 8.1. Regra fundamental
+
+**Cada empresa deverá poder conectar sua própria conta Google e selecionar os calendários que deseja usar.**
+
+A integração não deverá utilizar indiscriminadamente a conta pessoal da secretária para acessar todas as empresas.
+
+Uma empresa não terá acesso aos tokens ou calendários de outra organização.
+
+Permita que diferentes empresas conectem contas Google diferentes.
+
+A autorização concedida para uma organização não deverá ser transferida implicitamente para outra.
+
+## 8.2. Fluxo de conexão
+
+Implemente o seguinte fluxo:
+
+1. O usuário autorizado acessa as integrações da empresa.
+2. Seleciona “Conectar Google Agenda”.
+3. O sistema informa quais permissões serão solicitadas.
+4. O usuário inicia a autorização.
+5. O backend gera os parâmetros OAuth necessários.
+6. O fluxo usa proteção contra CSRF e validação do parâmetro state.
+7. O Google apresenta sua tela de consentimento.
+8. O backend recebe o callback autorizado.
+9. O código é trocado por tokens no servidor.
+10. O sistema identifica os calendários disponíveis dentro das permissões concedidas.
+11. O administrador seleciona o calendário principal.
+12. O sistema registra a associação entre organização, conexão e calendário.
+13. Um teste de integração verifica se o calendário escolhido pode ser acessado.
+14. A interface exibe o estado da conexão.
+
+Não marque a conexão como funcional antes de verificar o acesso real.
+
+## 8.3. Segurança OAuth
+
+Implemente:
+- OAuth 2.0 recomendado pelo Google.
+- URLs de redirecionamento exatas.
+- Proteção contra CSRF.
+- Validação de state.
+- Escopos mínimos.
+- Armazenamento seguro de tokens.
+- Criptografia adequada dos tokens sensíveis em repouso, com chaves mantidas fora do banco e rotação documentada.
+- Renovação de tokens quando aplicável.
+- Tratamento de revogação.
+- Tratamento de autorização expirada.
+- Reconexão guiada.
+- Desconexão controlada.
+- Revogação quando disponível.
+- Logs sem tokens.
+- Tratamento de falhas da API.
+
+Nunca exponha access tokens ou refresh tokens no frontend, URLs ou mensagens de erro.
+
+Não solicite escopos desnecessários.
+
+Considere que certas configurações OAuth e determinados escopos podem exigir configuração de consentimento, publicação ou verificação pelo Google.
+
+Não afirme que o fluxo está aprovado pelo Google sem confirmação real.
+
+## 8.4. Sincronização
+
+Implemente:
+- Consulta de calendários autorizados.
+- Listagem de eventos.
+- Criação de eventos.
+- Alteração de eventos.
+- Cancelamento de eventos.
+- Associação de eventos remotos a registros locais.
+- Prevenção de duplicação.
+- Tratamento de atualizações simultâneas.
+- Identificação de mudanças externas.
+- Reconciliação de alterações.
+- Renovação da sincronização incremental.
+- Indicador do último sucesso.
+- Indicador de erro.
+- Retentativas controladas.
+- Idempotência.
+- Recuperação de falhas.
+
+Utilize os mecanismos de sincronização incremental oferecidos pela API, incluindo tokens de página quando apropriado.
+
+Considere notificações push e sincronização periódica quando compatíveis com a infraestrutura implementada.
+
+Documente os limites da API, as quotas e o método de recuperação de estados inconsistentes.
+
+## 8.5. Conflitos e origem dos eventos
+
+Defina claramente como serão tratados os eventos criados:
+- No SecJessica.
+- No Google Agenda.
+- Em outro aplicativo sincronizado.
+
+Não sobrescreva silenciosamente uma alteração externa.
+
+Implemente uma estratégia documentada de resolução de conflitos.
+
+Quando houver divergências, mostre ao usuário o estado e permita uma resolução autorizada.
+
+Não associe automaticamente todos os eventos de uma conta a uma empresa.
+
+## 8.6. Configuração externa
+
+Produza um tutorial passo a passo para:
+- Criar ou selecionar um projeto no Google Cloud.
+- Habilitar Google Calendar API.
+- Configurar a tela de consentimento OAuth.
+- Configurar os domínios autorizados.
+- Configurar os redirect URIs.
+- Configurar as variáveis de ambiente.
+- Realizar os testes.
+- Verificar restrições de escopos.
+- Preparar a implantação de produção.
+
+Os nomes e etapas devem ser conferidos na documentação oficial atual antes da publicação.
+
+---
+
+# PARTE 9 — TAREFAS E ROTINAS ADMINISTRATIVAS
+
+Implemente um módulo de tarefas com:
+- Título.
+- Descrição.
+- Organização.
+- Responsável.
+- Prioridade.
+- Data de vencimento.
+- Estado.
+- Categoria.
+- Relacionamento opcional com contato.
+- Relacionamento opcional com compromisso.
+- Comentários autorizados.
+- Histórico de alterações.
+- Data de criação.
+- Data de atualização.
+
+Prioridades:
+- Baixa.
+- Normal.
+- Alta.
+- Urgente.
+
+Estados:
+- A fazer.
+- Em andamento.
+- Aguardando.
+- Concluída.
+- Cancelada.
+
+Inclua:
+- Tarefas do dia.
+- Tarefas atrasadas.
+- Tarefas futuras.
+- Tarefas por responsável.
+- Tarefas por empresa.
+- Filtros.
+- Ordenação.
+- Recorrências.
+- Listas de verificação.
+- Notificações de vencimento.
+
+Implemente regras de repetição robustas e tratamento correto de datas e fusos horários.
+
+---
+
+# PARTE 10 — ATENDIMENTO E COMUNICAÇÃO
+
+## 10.1. Modelos de mensagem
+
+Permita criar modelos editáveis para:
+- Primeiro contato.
+- Confirmação de compromisso.
+- Lembrete.
+- Reagendamento.
+- Cancelamento.
+- Solicitação de informações administrativas.
+- Agradecimento.
+- Retorno.
+- Orientações gerais de atendimento.
+
+Os modelos deverão ser isolados por organização quando contiverem configurações específicas.
+
+Inclua variáveis seguras, como nome do contato, data, horário, serviço e dados autorizados da empresa.
+
+Valide as variáveis antes de gerar ou enviar a mensagem.
+
+## 10.2. WhatsApp
+
+Na primeira versão, permita:
+- Gerar mensagem.
+- Copiar conteúdo.
+- Abrir conversa pelo link apropriado.
+- Utilizar modelos.
+- Registrar a interação administrativa conforme a configuração.
+
+Não alegue que uma mensagem foi enviada automaticamente quando apenas abriu o WhatsApp.
+
+Prepare arquitetura opcional para futura integração com a WhatsApp Business Platform oficial.
+
+A integração deverá respeitar as regras atuais do provedor, os templates exigidos, o consentimento e os limites de comunicação.
+
+Não utilize APIs não oficiais que comprometam contas ou violem as condições do serviço.
+
+## 10.3. E-mail
+
+Crie uma camada de envio configurável.
+
+Inclua:
+- Templates.
+- Variáveis de mensagem.
+- Validação dos destinatários.
+- Registro de tentativa e resultado.
+- Identificação de falhas.
+- Retentativas controladas.
+- Tratamento de rejeição.
+- Proteção contra envios duplicados.
+- Registro mínimo necessário.
+
+Não registre conteúdo confidencial desnecessário.
+
+Não envie dados clínicos ou jurídicos em mensagens administrativas comuns.
+
+---
+
+# PARTE 11 — DASHBOARD E RELATÓRIOS
+
+## 11.1. Painel principal
+
+Crie dashboard com:
+- Compromissos de hoje.
+- Próximos compromissos.
+- Pendências de confirmação.
+- Tarefas do dia.
+- Tarefas atrasadas.
+- Novos contatos.
+- Cancelamentos recentes.
+- Falhas de sincronização.
+- Convites pendentes.
+- Atividades recentes autorizadas.
+
+Use dados reais do banco, respeitando as permissões.
+
+Não apresente números inventados como se fossem dados de produção.
+
+Se utilizar dados de demonstração, identifique-os claramente e mantenha-os separados dos dados reais.
+
+## 11.2. Indicadores
+
+Crie indicadores:
+- Total de compromissos.
+- Compromissos confirmados.
+- Cancelamentos.
+- Reagendamentos.
+- Comparecimento, quando houver informação suficiente.
+- Total de contatos.
+- Novos contatos por período.
+- Tarefas concluídas.
+- Tarefas atrasadas.
+- Compromissos por profissional.
+- Compromissos por serviço.
+- Atividades administrativas.
+- Estado das integrações.
+
+Documente o cálculo de cada indicador.
+
+Inclua filtros de período, empresa, profissional, serviço e estado, conforme a autorização.
+
+## 11.3. Exportação
+
+Permita exportar relatórios em CSV e PDF quando apropriado.
+
+Exija autorização explícita.
+
+Os arquivos devem respeitar integralmente o escopo de organização e as permissões do usuário.
+
+Registre exportações administrativas relevantes.
+
+Não inclua colunas confidenciais desnecessárias.
+
+---
+
+# PARTE 12 — NOTIFICAÇÕES E PROCESSAMENTO ASSÍNCRONO
+
+Implemente uma central de notificações.
+
+Eventos:
+- Novo convite.
+- Convite aceito.
+- Compromisso próximo.
+- Confirmação pendente.
+- Reagendamento.
+- Conflito de agenda.
+- Falha de sincronização.
+- Token expirado.
+- Tarefa vencida.
+- Nova atividade administrativa relevante.
+- Integração desconectada.
+
+Inclua preferências de notificação por usuário.
+
+Implemente processamento assíncrono adequado às limitações reais da infraestrutura.
+
+Não use temporizadores dentro de processos de servidor como substitutos de mecanismos confiáveis de execução periódica.
+
+Quando tarefas em segundo plano forem necessárias, utilize uma solução apropriada com persistência, retentativas e monitoramento.
+
+Inclua:
+- Idempotência.
+- Backoff.
+- Limite de tentativas.
+- Tratamento de falhas permanentes.
+- Registro do estado do processamento.
+- Alertas de falhas recorrentes.
+
+Documente eventuais limites do plano de hospedagem.
+
+---
+
+# PARTE 13 — ARQUIVOS E DOCUMENTOS
+
+Implemente armazenamento privado somente quando necessário.
+
+Requisitos:
+- Buckets privados no Supabase Storage.
+- Verificação de autorização antes de disponibilizar arquivos.
+- URLs assinadas com prazo limitado.
+- Validação de formato.
+- Validação de tamanho.
+- Limites por organização.
+- Regras de retenção.
+- Exclusão controlada.
+- Proteção contra nomes maliciosos.
+- Auditoria de acessos relevantes.
+
+Arquivos de uma organização nunca poderão ser baixados por outra.
+
+Não crie armazenamento de prontuários de saúde, conteúdos clínicos, documentos jurídicos altamente confidenciais ou dados pessoais excessivos como funcionalidade padrão.
+
+Módulos especializados deverão exigir análise de segurança, necessidade, responsabilidade e requisitos profissionais próprios.
+
+---
+
+# PARTE 14 — INTERFACE, IDENTIDADE VISUAL E EXPERIÊNCIA
+
+## 14.1. Direção visual
+
+Desenvolva uma interface:
+- Moderna.
+- Elegante.
+- Profissional.
+- Leve.
+- Intuitiva.
+- Consistente.
+- Adaptável.
+- Acessível.
+- Com aparência de software SaaS premium.
+
+A identidade visual deve combinar credibilidade, organização e acolhimento.
+
+Utilize:
+- Paleta de cores equilibrada.
+- Tipografia legível.
+- Espaçamentos consistentes.
+- Hierarquia visual.
+- Ícones coerentes.
+- Componentes reutilizáveis.
+- Feedback visual.
+- Animações discretas.
+- Estados de carregamento.
+- Mensagens de erro úteis.
+- Confirmações de ações importantes.
+
+Não utilize excesso de gradientes, animações, efeitos ou cards sem função prática.
+
+Não sacrifique usabilidade pela aparência.
+
+## 14.2. Navegação
+
+Implemente:
+- Menu lateral recolhível.
+- Cabeçalho contextual.
+- Seletor de organização.
+- Busca global.
+- Indicador da empresa ativa.
+- Notificações.
+- Menu de perfil.
+- Acesso às configurações.
+- Breadcrumbs quando necessários.
+- Atalhos para as ações mais comuns.
+
+O usuário deve entender em qual empresa está trabalhando em todas as telas.
+
+## 14.3. Responsividade
+
+A interface deverá funcionar em:
+- Desktop.
+- Notebook.
+- Tablet.
+- Celulares Android.
+- iPhones.
+
+Não faça apenas uma redução da interface desktop.
+
+Crie padrões específicos para dispositivos menores:
+- Menus adaptados.
+- Formulários confortáveis.
+- Botões adequados ao toque.
+- Calendário móvel legível.
+- Tabelas adaptáveis.
+- Navegação objetiva.
+- Campos sem rolagem horizontal desnecessária.
+
+## 14.4. Acessibilidade
+
+Adote boas práticas compatíveis com WCAG 2.2 nível AA.
+
+Inclua:
+- Contraste adequado.
+- Foco visível.
+- Navegação por teclado.
+- Rótulos acessíveis.
+- Mensagens associadas aos campos.
+- Semântica adequada.
+- Estados não comunicados somente por cor.
+- Componentes acessíveis.
+- Suporte a zoom.
+- Textos alternativos.
+- Ordem coerente de navegação.
+
+## 14.5. Tema
+
+Implemente tema claro e escuro.
+
+Permita que cada usuário configure sua preferência.
+
+Persista a configuração de maneira adequada e sem transformá-la em dado sensível.
+
+## 14.6. Estados da interface
+
+Todas as telas deverão contemplar:
+- Carregamento.
+- Sucesso.
+- Erro.
+- Dados vazios.
+- Falha de conexão.
+- Falta de permissão.
+- Formulário inválido.
+- Operação em andamento.
+- Ausência de resultados.
+- Sessão expirada.
+
+Não deixe botões decorativos ou controles que não executam sua função.
+
+---
+
+# PARTE 15 — AS 30 MELHORIAS DE QUALIDADE DE VIDA
+
+Implemente as seguintes melhorias como funcionalidades reais.
+
+1. Busca global de contatos, empresas, tarefas e compromissos, respeitando permissões.
+2. Seletor rápido para alternar entre organizações.
+3. Criação rápida de agendamentos a partir de telas autorizadas.
+4. Preenchimento automático seguro de informações existentes.
+5. Salvamento de rascunhos em formulários apropriados.
+6. Detecção de possíveis contatos duplicados.
+7. Importação CSV com pré-visualização e validação.
+8. Exportação controlada de relatórios.
+9. Filtros salvos por usuário.
+10. Personalização de colunas de tabelas.
+11. Paginação e consultas eficientes.
+12. Indicadores claros de sincronização com Google Agenda.
+13. Identificação visual de conflitos de horários.
+14. Confirmação para ações destrutivas.
+15. Possibilidade de desfazer alterações reversíveis quando seguro.
+16. Histórico de atividades administrativas.
+17. Preferências individuais de notificação.
+18. Central de pendências e tarefas atrasadas.
+19. Modelos reutilizáveis de mensagens.
+20. Duplicação de configurações sem duplicar dados pessoais.
+21. Assistente de configuração inicial por segmento.
+22. Tema claro e escuro.
+23. Layout responsivo otimizado para celulares.
+24. Atalhos de teclado e foco acessível.
+25. Estados vazios com orientações úteis.
+26. Erros compreensíveis com identificadores de suporte.
+27. Retentativas seguras em operações temporariamente malsucedidas.
+28. Indicadores de saúde das integrações.
+29. Configurações de privacidade, retenção e exportação.
+30. Assistente de onboarding com progresso de configuração por empresa.
+
+Para cada melhoria:
+- Implemente a funcionalidade.
+- Valide permissões.
+- Adicione testes pertinentes.
+- Documente a utilização.
+- Inclua feedback visual adequado.
+
+Não marque uma melhoria como concluída simplesmente porque criou um botão ou uma opção visual.
+
+---
+
+# PARTE 16 — SEGURANÇA TÉCNICA
+
+## 16.1. Princípios
+
+Aplique práticas adequadas de segurança, incluindo recomendações pertinentes do OWASP ASVS e do OWASP Top 10.
+
+Implemente:
+- RLS.
+- Autorização no servidor.
+- Validação de entrada.
+- Consultas parametrizadas.
+- Proteção contra SQL injection.
+- Proteção contra XSS.
+- Proteção contra CSRF quando aplicável.
+- Controle de sessões.
+- Rate limiting.
+- Cabeçalhos HTTP de segurança.
+- Política de segurança de conteúdo adequada.
+- Gestão segura de segredos.
+- Auditoria.
+- Monitoramento.
+- Proteção de endpoints administrativos.
+- Validação de webhooks.
+- Revisão de dependências.
+- Procedimento de resposta a incidentes.
+
+Não dependa exclusivamente de validação no frontend.
+
+## 16.2. Segredos
+
+Nunca inclua:
+- Senhas reais.
+- Tokens Google.
+- Refresh tokens.
+- Chaves privadas.
+- Segredos OAuth.
+- Chaves administrativas do Supabase.
+- Tokens de provedor de e-mail.
+
+em repositórios públicos, frontend, logs ou documentação compartilhável.
+
+Crie `.env.example` sem segredos.
+
+Documente quais variáveis precisam ser configuradas em cada ambiente.
+
+Utilize variáveis protegidas no ambiente de implantação.
+
+Caso haja suspeita de vazamento, documente o procedimento de rotação.
+
+## 16.3. Auditoria
+
+Registre operações relevantes:
+- Login e eventos de segurança apropriados.
+- Alterações de função.
+- Convites.
+- Inclusão e remoção de usuários.
+- Alterações administrativas.
+- Exclusões.
+- Exportações.
+- Acesso administrativo excepcional.
+- Mudanças de integração.
+- Falhas sensíveis.
+
+Não registre senhas, tokens ou conteúdo confidencial desnecessário.
+
+Logs devem ter políticas de acesso e retenção.
+
+O usuário comum não poderá adulterar nem excluir livremente seus próprios registros de auditoria.
+
+Não considere logs, sozinhos, garantia de segurança.
+
+## 16.4. Backups
+
+Documente:
+- Estratégia de backup.
+- Frequência.
+- Responsáveis.
+- Retenção.
+- Proteção dos backups.
+- Procedimento de restauração.
+- Testes periódicos.
+- Objetivos de recuperação compatíveis com os recursos contratados.
+
+Não declare que existe backup funcionando sem confirmar que ele foi configurado.
+
+---
+
+# PARTE 17 — PRIVACIDADE E LEGISLAÇÃO BRASILEIRA
+
+## 17.1. LGPD
+
+Considere a Lei Geral de Proteção de Dados Pessoais e as demais normas efetivamente aplicáveis.
+
+Projete o sistema com:
+- Minimização de dados.
+- Finalidade definida.
+- Controle de acesso.
+- Transparência.
+- Retenção adequada.
+- Exclusão ou anonimização quando cabível.
+- Registro de operações pertinentes.
+- Procedimentos para solicitações de titulares.
+- Gestão de fornecedores.
+- Proteção de dados pessoais.
+- Resposta a incidentes.
+- Documentação de responsabilidades.
+
+A definição de controlador e operador depende das atividades efetivamente realizadas e não apenas da nomenclatura adotada no contrato.
+
+Avalie o papel da plataforma, da secretária e de cada empresa contratante.
+
+## 17.2. Saúde e psicologia
+
+Adote proteção reforçada para organizações que tratam dados de saúde.
+
+Não crie, por padrão, campos para:
+- Diagnósticos.
+- Conteúdo de sessões.
+- Prontuários.
+- Histórico clínico detalhado.
+- Relatos terapêuticos.
+- Informações sensíveis desnecessárias.
+
+O SecJessica deve focar inicialmente na administração da agenda, contatos e rotina operacional.
+
+A secretária só poderá acessar as informações necessárias para as tarefas que foram legitimamente autorizadas.
+
+## 17.3. Advocacia
+
+Não armazene automaticamente o conteúdo de processos, estratégias de defesa, documentos jurídicos confidenciais ou comunicações protegidas pelo sigilo profissional.
+
+As funções deverão ser administrativas por padrão.
+
+A ampliação do escopo deve ser planejada com requisitos próprios de confidencialidade e segurança.
+
+## 17.4. Documentação jurídica
+
+Crie um conjunto de documentos preliminares em português brasileiro:
+
+1. Termos de Uso da plataforma.
+2. Política de Privacidade.
+3. Aviso de Cookies, se aplicável.
+4. Política de Segurança da Informação.
+5. Política de Controle de Acesso.
+6. Política de Retenção e Exclusão.
+7. Procedimento para solicitações de titulares.
+8. Procedimento de resposta a incidentes.
+9. Modelo de contrato de prestação de serviços de secretariado remoto.
+10. Modelo de contrato de licença ou assinatura SaaS, se houver comercialização da plataforma.
+11. Modelo de acordo de tratamento de dados, quando aplicável.
+12. Modelo de termo de confidencialidade.
+13. Termo ou autorização para integração com agendas.
+14. Procedimento de encerramento de contrato.
+15. Matriz de responsabilidades.
+16. Inventário preliminar das operações de tratamento.
+17. Matriz preliminar de dados, finalidades, acesso e retenção.
+18. Checklist de fornecedores e suboperadores.
+19. Modelo de registro de incidentes.
+20. Checklist de entrada e saída de clientes.
+
+Utilize campos editáveis para informações ausentes.
+
+Não invente dados societários, CNPJ, endereços ou assinaturas.
+
+Não afirme que a documentação garante conformidade legal absoluta.
+
+Identifique os documentos que precisam de revisão profissional antes do uso comercial.
+
+Prepare textos profissionais, compreensíveis e consistentes com a funcionalidade real da plataforma.
+
+---
+
+# PARTE 18 — SEO E SITE INSTITUCIONAL
+
+Crie uma landing page pública profissional para o SecJessica.
+
+Seções sugeridas:
+- Página inicial.
+- O que é o SecJessica.
+- Funcionalidades.
+- Benefícios.
+- Segmentos atendidos.
+- Como funciona.
+- Perguntas frequentes.
+- Contato comercial.
+- Termos de Uso.
+- Política de Privacidade.
+
+A página deverá explicar que o sistema oferece ferramentas de secretariado remoto e gestão administrativa.
+
+Não invente clientes, depoimentos, avaliações, resultados financeiros, certificações, números de uso ou garantias comerciais.
+
+Implemente:
+- Metadados.
+- Títulos e descrições.
+- Open Graph.
+- URLs canônicas.
+- Sitemap.
+- Robots.txt.
+- Estrutura semântica.
+- Otimização de imagens.
+- Carregamento eficiente.
+- SEO técnico.
+- Dados estruturados somente quando verdadeiros e aplicáveis.
+
+Não indexe as páginas privadas, registros empresariais, informações autenticadas ou painéis.
+
+Não exponha os dados pessoais do responsável na página pública sem configuração explícita.
+
+---
+
+# PARTE 19 — PLANOS, COBRANÇA E COMERCIALIZAÇÃO
+
+Prepare a arquitetura para futura cobrança, mas trate esse módulo como opcional.
+
+Possíveis planos:
+- Essencial.
+- Profissional.
+- Avançado.
+
+Permita definir limites configuráveis:
+- Número de organizações.
+- Usuários.
+- Calendários conectados.
+- Contatos.
+- Armazenamento.
+- Relatórios.
+- Recursos de automação.
+- Histórico de auditoria.
+
+Se a cobrança for implementada:
+- Utilize provedor compatível com a operação no Brasil.
+- Documente pagamentos recorrentes.
+- Trate webhooks com validação e idempotência.
+- Inclua cancelamento.
+- Inclua estados de assinatura.
+- Trate falhas e inadimplência.
+- Inclua fluxos de reembolso quando suportados.
+- Não armazene diretamente dados de cartões.
+- Não marque um pagamento como concluído sem confirmação do provedor.
+
+Não habilite cobrança real antes de receber a configuração do responsável e de testar os fluxos adequadamente.
+
+---
+
+# PARTE 20 — TESTES AUTOMATIZADOS
+
+## 20.1. Estratégia
+
+Crie:
+- Testes unitários.
+- Testes de integração.
+- Testes de banco de dados.
+- Testes de autorização.
+- Testes de interface.
+- Testes ponta a ponta.
+- Testes de acessibilidade pertinentes.
+- Testes de build.
+- Testes de implantação quando possível.
+
+Utilize ferramentas compatíveis com a stack.
+
+## 20.2. Cenários mínimos
+
+Teste:
+- Login.
+- Logout.
+- Recuperação de senha.
+- Sessões expiradas.
+- Convites.
+- Criação de empresas.
+- Edição de organizações.
+- Troca de contexto.
+- Controle de permissões.
+- CRM.
+- Importação CSV.
+- Exportação.
+- Criação de tarefas.
+- Criação e edição de agendamentos.
+- Conflitos.
+- Sincronização Google.
+- Expiração de tokens.
+- Revogação de acesso.
+- Retentativas.
+- Notificações.
+- Arquivos privados.
+- Logs.
+- Responsividade.
+- Acessibilidade.
+
+## 20.3. Testes multiempresa
+
+Crie pelo menos duas organizações fictícias e usuários com permissões distintas.
+
+Tente acessar registros de uma organização usando a conta da outra.
+
+Verifique:
+- Consultas SQL protegidas por RLS.
+- APIs.
+- Endpoints.
+- Server Actions.
+- Exportações.
+- Arquivos.
+- Busca global.
+- Relatórios.
+- IDs manipulados.
+- Troca de contexto.
+- Cache.
+- Consultas concorrentes.
+
+Os testes deverão falhar se uma organização conseguir acessar dados não autorizados de outra.
+
+Não utilize dados reais de pacientes ou clientes nos testes.
+
+---
+
+# PARTE 21 — PUBLICAÇÃO NA VERCEL E SUPABASE
+
+## 21.1. Preparação
+
+Prepare o projeto para uma implantação real.
+
+Inclua:
+- Build de produção.
+- Variáveis de ambiente.
+- Configuração de domínio.
+- Configuração de autenticação.
+- URLs autorizadas.
+- Integração com Supabase.
+- Configuração Google OAuth.
+- Migracões versionadas.
+- Testes.
+- Monitoramento.
+- Logs.
+- Verificações de saúde.
+- Plano de rollback.
+
+## 21.2. Vercel
+
+Documente como:
+1. Criar ou selecionar a conta.
+2. Importar o repositório.
+3. Configurar o framework.
+4. Definir variáveis de ambiente.
+5. Configurar domínio.
+6. Executar o deploy.
+7. Verificar os logs.
+8. Testar as rotas.
+9. Confirmar autenticação.
+10. Testar o banco e as integrações.
+11. Reverter a implantação, se necessário.
+
+## 21.3. Supabase
+
+Documente como:
+1. Criar o projeto.
+2. Configurar a região adequada.
+3. Configurar autenticação.
+4. Definir as URLs autorizadas.
+5. Aplicar migrações.
+6. Verificar políticas RLS.
+7. Criar o primeiro administrador.
+8. Testar login.
+9. Testar isolamento multiempresa.
+10. Configurar backups e recuperação.
+11. Configurar limites e alertas, quando disponíveis.
+
+## 21.4. Limites de acesso externo
+
+Você não tem autorização para inventar contas, senhas, tokens, chaves ou confirmações externas.
+
+Se não conseguir acessar a conta real do responsável:
+- Prepare a aplicação.
+- Gere os arquivos.
+- Configure tudo que for possível localmente.
+- Identifique as etapas bloqueadas.
+- Forneça instruções para concluir as configurações.
+- Informe como validar a implantação.
+
+Não declare uma implantação concluída até verificar o endereço real e executar os testes críticos.
+
+Não publique segredos em logs ou repositórios.
+
+---
+
+# PARTE 22 — DOCUMENTAÇÃO TÉCNICA E ESTRUTURA DE ARQUIVOS
+
+Organize o projeto de forma profissional.
+
+Estrutura de referência:
+
+secjessica/
+├── app/
+│   ├── (public)/
+│   ├── (auth)/
+│   ├── (dashboard)/
+│   ├── api/
+│   ├── auth/
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── components/
+│   ├── ui/
+│   ├── layout/
+│   ├── forms/
+│   ├── calendar/
+│   ├── contacts/
+│   ├── organizations/
+│   └── dashboard/
+├── features/
+│   ├── auth/
+│   ├── organizations/
+│   ├── members/
+│   ├── contacts/
+│   ├── appointments/
+│   ├── tasks/
+│   ├── integrations/
+│   ├── notifications/
+│   └── reports/
+├── lib/
+│   ├── supabase/
+│   ├── auth/
+│   ├── permissions/
+│   ├── validation/
+│   ├── security/
+│   ├── google/
+│   ├── errors/
+│   └── utils/
+├── server/
+│   ├── services/
+│   ├── repositories/
+│   ├── integrations/
+│   └── jobs/
+├── supabase/
+│   ├── migrations/
+│   ├── seed.sql
+│   └── tests/
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   └── e2e/
+├── docs/
+│   ├── architecture/
+│   ├── api/
+│   ├── security/
+│   ├── legal/
+│   ├── deployment/
+│   └── operations/
+├── public/
+├── .env.example
+├── .gitignore
+├── README.md
+├── SECURITY.md
+├── package.json
+├── tsconfig.json
+├── next.config.ts
+├── eslint.config.mjs
+└── playwright.config.ts
+
+Essa árvore é uma referência. Ajuste-a à estrutura real das tecnologias e ferramentas utilizadas, evitando arquivos fictícios ou desnecessários.
+
+## Documentação obrigatória
+
+Crie:
+- README completo.
+- Documento de arquitetura.
+- Modelo de dados.
+- Diagrama de entidades e relacionamentos.
+- Matriz de permissões.
+- Documentação de APIs.
+- Documentação de integrações.
+- Guia de instalação.
+- Guia de implantação.
+- Guia de criação do primeiro administrador.
+- Guia de configuração Google.
+- Guia de backup.
+- Guia de restauração.
+- Guia de segurança.
+- Guia operacional.
+- Checklist de produção.
+- Relatório de testes.
+- Relação de limitações conhecidas.
+- Documentação jurídica preliminar.
+
+Crie um `.env.example` com todas as variáveis necessárias e nenhuma credencial real.
+
+---
+
+# PARTE 23 — MÉTODO DE EXECUÇÃO
+
+Não pare em um plano escrito.
+
+Implemente o sistema por fases e continue a execução dentro das capacidades do ambiente.
+
+## Fase 1 — Arquitetura
+
+- Definir entidades.
+- Definir funções.
+- Definir permissões.
+- Definir fluxos.
+- Definir estrutura.
+- Definir critérios de segurança.
+
+Entregável: arquitetura documentada e decisões justificadas.
+
+## Fase 2 — Fundação
+
+- Criar projeto.
+- Instalar dependências.
+- Configurar TypeScript.
+- Configurar estilo.
+- Criar layout.
+- Configurar Supabase.
+- Criar migrações.
+- Configurar autenticação.
+- Implementar RLS.
+
+Entregável: aplicação inicial executável.
+
+## Fase 3 — Multiempresa
+
+- Criar organizações.
+- Criar associações.
+- Criar funções e permissões.
+- Implementar convites.
+- Criar primeiro administrador.
+- Implementar troca de organização.
+- Testar isolamento.
+
+Entregável: núcleo seguro de organizações e usuários.
+
+## Fase 4 — Gestão
+
+- CRM.
+- Serviços.
+- Profissionais.
+- Tarefas.
+- Configurações por segmento.
+- Histórico.
+- Busca.
+- Importação e exportação.
+
+Entregável: módulos administrativos funcionais.
+
+## Fase 5 — Agenda
+
+- Calendário interno.
+- Agendamentos.
+- Disponibilidade.
+- Conflitos.
+- Estados.
+- Reagendamento.
+- Histórico.
+
+Entregável: agenda interna utilizável.
+
+## Fase 6 — Google Calendar
+
+- OAuth.
+- Conexões por empresa.
+- Seleção de calendários.
+- Criação e atualização de eventos.
+- Sincronização.
+- Tokens.
+- Erros.
+- Recuperação.
+- Testes reais.
+
+Entregável: integração verificada com uma conta autorizada.
+
+## Fase 7 — Qualidade de vida
+
+- 30 melhorias.
+- Notificações.
+- Modelos de mensagem.
+- Relatórios.
+- Indicadores.
+- Acessibilidade.
+- Responsividade.
+
+Entregável: experiência operacional refinada.
+
+## Fase 8 — Segurança e documentação
+
+- Testes.
+- Revisão de RLS.
+- Testes negativos.
+- Revisão de permissões.
+- Documentos jurídicos.
+- Segurança operacional.
+- Backup.
+- Resposta a incidentes.
+
+Entregável: documentação e relatório de verificação.
+
+## Fase 9 — Publicação
+
+- Build.
+- Configuração externa.
+- Migrações.
+- Deploy.
+- Testes de fumaça.
+- Login real.
+- Integração real.
+- Monitoramento.
+- Verificação de produção.
+
+Entregável: implantação verificada ou lista objetiva das etapas externas ainda bloqueadas.
+
+## Fase 10 — Entrega
+
+Apresente o repositório, instruções de instalação, documentação, testes, limitações e roteiro de manutenção.
+
+Se o ambiente permitir persistência de arquivos entre sessões, atualize um arquivo de continuidade com:
+- Fase atual.
+- Arquivos alterados.
+- Decisões.
+- Comandos executados.
+- Testes aprovados.
+- Problemas encontrados.
+- Credenciais que precisam ser configuradas, identificadas somente pelo nome das variáveis, nunca pelo valor.
+- Pendências.
+- Próxima tarefa concreta.
+
+---
+
+# PARTE 24 —  CRITÉRIOS DE ACEITAÇÃO
+
+O sistema não será considerado pronto para produção apenas por ter uma interface bonita ou por compilar.
+
+Verifique todos os requisitos abaixo:
+
+1. A aplicação inicia e compila.
+2. A autenticação funciona.
+3. A recuperação de senha funciona.
+4. O primeiro administrador pode ser provisionado com segurança.
+5. A criação de organizações funciona.
+6. Usuários podem ser convidados.
+7. As permissões são aplicadas no servidor.
+8. As políticas RLS estão implementadas.
+9. Os testes de isolamento entre organizações passam.
+10. O CRM grava e recupera dados reais.
+11. As tarefas funcionam.
+12. Os agendamentos funcionam.
+13. Os conflitos são tratados no servidor.
+14. O Google Calendar pode ser conectado por organização.
+15. Os tokens são protegidos.
+16. A sincronização evita duplicações.
+17. As operações recuperam-se de falhas controladas.
+18. Os relatórios respeitam as permissões.
+19. Os arquivos privados são protegidos.
+20. A interface funciona em dispositivos móveis.
+21. Os estados de carregamento e erro foram implementados.
+22. As 30 melhorias foram testadas.
+23. A documentação está disponível.
+24. Os documentos jurídicos estão claramente identificados como modelos preliminares.
+25. As variáveis de ambiente estão documentadas.
+26. Os testes automatizados críticos passam.
+27. O build de produção passa.
+28. O procedimento de backup está documentado.
+29. O endereço de produção responde corretamente após o deploy.
+30. As integrações de produção foram verificadas ou estão explicitamente identificadas como pendentes.
+
+Não classifique um requisito como concluído sem a evidência correspondente.
+
+Utilize uma tabela de status com as categorias:
+- Concluído e testado.
+- Implementado, ainda sem teste real.
+- Parcialmente implementado.
+- Pendente de credencial externa.
+- Pendente de decisão do responsável.
+- Pendente de revisão jurídica.
+- Bloqueado por limitação técnica.
+
+---
+
+# PARTE 25 — REGRAS DE TRABALHO PARA A IA DESENVOLVEDORA
+
+Siga estas regras durante todo o desenvolvimento:
+
+1. Não responda apenas com sugestões.
+2. Não entregue apenas um plano.
+3. Não encerre o trabalho após criar a tela inicial.
+4. Não crie botões sem funcionalidade.
+5. Não simule uma integração e a apresente como real.
+6. Não use dados de demonstração como dados de produção.
+7. Não invente resultados de testes.
+8. Não declare deploy sem verificação real.
+9. Não invente configurações de serviços externos.
+10. Não exponha segredos.
+11. Não deixe permissões apenas no frontend.
+12. Não permita acesso cruzado entre organizações.
+13. Não utilize dados reais de pacientes nos testes.
+14. Não implemente coleta excessiva de dados pessoais.
+15. Não invente informações jurídicas ou societárias.
+16. Não declare conformidade legal absoluta.
+17. Não crie endpoints administrativos públicos sem proteção.
+18. Não ignore erros de build, lint ou testes.
+19. Não mantenha erros conhecidos sem documentá-los.
+20. Não elimine funcionalidades existentes para contornar falhas.
+21. Não substitua soluções implementadas por páginas estáticas.
+22. Não implemente cobrança real sem configuração e autorização.
+23. Não interrompa uma fase enquanto existir trabalho viável e necessário dentro do ambiente.
+24. Caso exista limite de execução, priorize uma base funcional e documente precisamente o restante.
+25. Antes de finalizar, faça uma revisão de segurança e de consistência.
+26. Se houver uma decisão técnica importante, explique-a brevemente e adote uma alternativa razoável sem paralisar desnecessariamente o projeto.
+27. Utilize documentação oficial atual para APIs, bibliotecas, hospedagem e integrações.
+28. Prefira correções permanentes a soluções improvisadas.
+29. Registre a evolução em documentação.
+30. Seja transparente sobre tudo o que foi ou não foi concluído.
+
+Sempre que possível, execute os comandos e modifique os arquivos diretamente.
+
+Se precisar dividir o desenvolvimento por contexto ou limite de execução, mantenha um registro de continuidade para retomar exatamente de onde parou.
+
+Ao terminar cada fase, apresente:
+- O que foi implementado.
+- Os arquivos criados ou alterados.
+- Os comandos executados.
+- Os testes realizados.
+- Os resultados.
+- As pendências.
+- As próximas tarefas concretas.
+
+---
+
+# RESULTADO FINAL ESPERADO
+
+Quero que o SecJessica se transforme em uma plataforma profissional de secretariado remoto, com operação multiempresa real, diversos usuários e permissões, CRM, tarefas, agendamentos, Google Agenda independente por empresa, relatórios, notificações, identidade visual consistente, segurança, documentação e implantação verificável.
+
+O sistema deve permitir que a Jéssica consiga atender uma nova empresa sem precisar de uma nova instalação e sem misturar informações entre clientes.
+
+Quero uma experiência em que cadastrar uma clínica de psicologia, um consultório odontológico ou um escritório de advocacia seja um processo guiado, simples e profissional.
+
+Quero que o código seja organizado e mantenível, que o banco seja seguro, que a interface seja agradável e que as funcionalidades sejam testadas.
+
+Comece pela inspeção do ambiente de desenvolvimento disponível. Em seguida, implemente a primeira fase real do projeto, crie os arquivos necessários e continue até o limite do que puder ser executado e verificado.
+
+Não termine a tarefa entregando somente o planejamento. O planejamento deve conduzir à implementação.
+
+O resultado deverá ser o produto SecJessica, acompanhado de código-fonte, banco versionado, documentação técnica, documentação jurídica preliminar, testes, instruções de implantação e um relatório honesto do estado final.
+
+**NOME OFICIAL DO PRODUTO: SecJessica.**
+
+Use esse nome em todo o sistema, sem exceções.
+
+# ADENDO OBRIGATÓRIO — ARQUITETURA DISTRIBUÍDA, MODULAR E ESCALÁVEL DO SECJESSICA
+
+## 1. Decisão arquitetural inegociável
+
+O SecJessica NÃO deve ser desenvolvido como um monólito tradicional, um monobloco de código ou uma única aplicação de backend que concentra todas as responsabilidades de negócio.
+
+Quero uma arquitetura distribuída por domínios, com serviços bem delimitados, contratos explícitos, responsabilidades independentes e capacidade de implantação, manutenção e escalabilidade separadas.
+
+O código deverá ficar organizado em um MONOREPO, utilizando workspaces e ferramentas de gerenciamento de dependências e builds, mas cada aplicação ou serviço deverá possuir sua própria estrutura, suas próprias responsabilidades, seus testes e sua configuração de implantação.
+
+Um monorepo não significa um monólito: o repositório poderá conter diversas aplicações independentes, com pipelines e implantações separadas.
+
+Utilize pnpm Workspaces e Turborepo, ou ferramentas equivalentes caso haja uma justificativa técnica documentada.
+
+A arquitetura deverá equilibrar separação real, segurança, facilidade de manutenção, custos operacionais e capacidade de crescimento.
+
+Não crie dezenas de serviços minúsculos sem necessidade. Separe os domínios de negócio fundamentais desde o início e permita que cada serviço cresça independentemente.
+
+## 2. Aplicações e serviços independentes
+
+Estruture inicialmente o projeto com as seguintes aplicações:
+
+### 2.1. apps/web — Frontend
+
+Tecnologias:
+- Next.js.
+- React.
+- TypeScript.
+- Tailwind CSS.
+- Componentes acessíveis reutilizáveis.
+
+Responsabilidades:
+- Site institucional.
+- Login e interfaces de autenticação.
+- Painel da secretária.
+- Painéis das empresas.
+- CRM visual.
+- Agenda.
+- Tarefas.
+- Relatórios.
+- Configurações.
+- Interface responsiva.
+- Consumo das APIs autorizadas.
+
+Hospedagem preferencial: Vercel.
+
+O frontend não deverá conter regras críticas de negócio, credenciais privilegiadas ou lógica de autorização considerada suficiente por si só.
+
+As operações protegidas deverão ser executadas pelos serviços de backend.
+
+### 2.2. apps/api-gateway — Gateway de API
+
+Crie um gateway separado para a entrada das requisições da aplicação.
+
+Responsabilidades:
+- Encaminhar requisições aos serviços corretos.
+- Aplicar limites de requisição.
+- Padronizar respostas e erros.
+- Propagar identificadores de correlação.
+- Aplicar validações de segurança pertinentes.
+- Configurar políticas de CORS adequadas.
+- Encaminhar informações de autenticação verificadas.
+- Disponibilizar uma entrada consistente para o frontend.
+- Implementar versionamento de rotas.
+
+O gateway não deverá concentrar as regras de negócio dos demais serviços.
+
+Toda autorização necessária deverá ser verificada também pelo serviço responsável pelo recurso. O gateway não poderá ser o único ponto de controle de acesso.
+
+### 2.3. apps/organizations-service — Organizações e acessos
+
+Responsabilidades:
+- Cadastro de empresas.
+- Configurações organizacionais.
+- Associação de usuários às organizações.
+- Convites.
+- Funções.
+- Permissões.
+- Controle de acesso por empresa.
+- Ativação e desativação de organizações.
+- Preferências de organização.
+- Configuração de módulos habilitados.
+
+O serviço deverá integrar-se ao Supabase Auth para verificar a identidade dos usuários.
+
+Não crie um segundo sistema de autenticação independente sem necessidade justificada.
+
+### 2.4. apps/crm-service — CRM e contatos
+
+Responsabilidades:
+- Cadastro de contatos.
+- Alteração e consulta.
+- Tags.
+- Pesquisa.
+- Filtros.
+- Importação e exportação.
+- Detecção de duplicidades.
+- Histórico administrativo.
+- Campos personalizados.
+- Relacionamentos autorizados com as organizações.
+
+O serviço será o responsável pelas regras e pela persistência de seu domínio.
+
+Nenhum outro serviço deverá alterar diretamente as tabelas pertencentes ao CRM.
+
+### 2.5. apps/scheduling-service — Agenda e compromissos
+
+Responsabilidades:
+- Serviços oferecidos.
+- Profissionais.
+- Disponibilidade.
+- Horários de funcionamento.
+- Agendamentos.
+- Reagendamentos.
+- Cancelamentos.
+- Prevenção de conflitos.
+- Estados dos compromissos.
+- Regras administrativas da agenda.
+- Emissão de eventos de domínio.
+
+Esse serviço será responsável pela consistência dos agendamentos internos.
+
+Deverá considerar concorrência, fusos horários, eventos externos e conflitos entre requisições simultâneas.
+
+### 2.6. apps/calendar-integration-service — Google Calendar
+
+Responsabilidades:
+- Integração OAuth com o Google.
+- Conexões autorizadas por empresa.
+- Seleção de calendários.
+- Armazenamento protegido de tokens.
+- Criação de eventos externos.
+- Atualização e cancelamento.
+- Sincronização.
+- Identificação de duplicidades.
+- Reconciliação de mudanças.
+- Tratamento de falhas.
+- Renovação de autorização.
+- Indicadores de estado da conexão.
+
+O serviço não poderá compartilhar tokens entre organizações.
+
+A conexão de uma empresa não poderá conceder acesso implícito aos calendários de outra.
+
+Este serviço deverá possuir limites de acesso aos dados e credenciais claramente definidos.
+
+### 2.7. apps/automation-worker — Notificações e processamento em segundo plano
+
+Responsabilidades:
+- Processamento de tarefas assíncronas.
+- Lembretes.
+- Notificações.
+- Envio de e-mails.
+- Preparação de mensagens.
+- Processamento de filas.
+- Retentativas.
+- Recuperação de trabalhos interrompidos.
+- Sincronizações agendadas.
+- Tratamento de falhas permanentes.
+
+Este processo deverá poder ser iniciado, interrompido, escalado e implantado independentemente das interfaces web.
+
+Não dependa de processos em memória na aplicação frontend para executar tarefas críticas.
+
+### 2.8. Serviços futuros
+
+Prepare a arquitetura para adicionar, quando existir necessidade real:
+
+- Serviço de relatórios.
+- Serviço de faturamento.
+- Serviço de arquivos.
+- Serviço de auditoria e observabilidade avançada.
+- Serviço de integrações externas.
+- Serviço de automações comerciais.
+
+Não implemente todos esses serviços antecipadamente sem requisitos definidos.
+
+## 3. Organização compartilhada do monorepo
+
+Crie uma estrutura semelhante à seguinte:
+
+secjessica/
+├── apps/
+│   ├── web/
+│   ├── api-gateway/
+│   ├── organizations-service/
+│   ├── crm-service/
+│   ├── scheduling-service/
+│   ├── calendar-integration-service/
+│   └── automation-worker/
+├── packages/
+│   ├── api-contracts/
+│   ├── ui/
+│   ├── config-typescript/
+│   ├── config-eslint/
+│   ├── config-formatting/
+│   ├── observability/
+│   └── test-utils/
+├── infrastructure/
+│   ├── docker/
+│   ├── deployment/
+│   ├── environments/
+│   └── monitoring/
+├── supabase/
+│   ├── migrations/
+│   ├── seeds/
+│   └── tests/
+├── docs/
+│   ├── architecture/
+│   ├── services/
+│   ├── api/
+│   ├── security/
+│   ├── database/
+│   ├── integrations/
+│   ├── deployment/
+│   ├── operations/
+│   └── legal/
+├── scripts/
+├── .github/
+│   └── workflows/
+├── package.json
+├── pnpm-workspace.yaml
+├── turbo.json
+├── .env.example
+├── .gitignore
+├── README.md
+└── SECURITY.md
+
+Adapte os diretórios quando necessário, mantendo as fronteiras arquiteturais.
+
+Cada aplicação deverá possuir:
+- Seu próprio package.json.
+- Sua configuração TypeScript.
+- Seus arquivos de inicialização.
+- Seus módulos internos.
+- Sua configuração de ambiente.
+- Seus testes.
+- Sua documentação.
+- Seu Dockerfile quando aplicável.
+- Seu procedimento de build.
+- Seu procedimento de implantação.
+
+Não coloque toda a lógica do sistema em um pacote genérico chamado shared.
+
+O compartilhamento de código deverá ser explícito, restrito e documentado.
+
+## 4. Arquitetura interna de cada serviço
+
+Utilize NestJS ou uma solução equivalente adequada para os serviços backend, com módulos e injeção de dependências.
+
+Dentro de cada serviço, organize o código por domínio e responsabilidade.
+
+Estrutura de referência:
+
+apps/crm-service/src/
+├── main.ts
+├── app.module.ts
+├── modules/
+│   └── contacts/
+│       ├── domain/
+│       │   ├── entities/
+│       │   ├── value-objects/
+│       │   ├── rules/
+│       │   └── repositories/
+│       ├── application/
+│       │   ├── commands/
+│       │   ├── queries/
+│       │   ├── use-cases/
+│       │   └── services/
+│       ├── infrastructure/
+│       │   ├── persistence/
+│       │   ├── repositories/
+│       │   └── mappers/
+│       ├── presentation/
+│       │   ├── controllers/
+│       │   ├── dto/
+│       │   └── validators/
+│       ├── contacts.module.ts
+│       └── contacts.spec.ts
+├── common/
+├── config/
+└── health/
+
+Adapte a estrutura quando o módulo não necessitar de todos esses diretórios.
+
+Não crie arquivos vazios apenas para preencher uma árvore.
+
+As regras de negócio deverão permanecer independentes da interface HTTP e dos fornecedores externos.
+
+As dependências deverão apontar para abstrações e contratos, evitando acoplamento desnecessário.
+
+Evite dependências circulares entre módulos e serviços.
+
+## 5. Comunicação entre os serviços
+
+Defina contratos explícitos para toda comunicação entre aplicações.
+
+Utilize:
+- APIs REST versionadas.
+- OpenAPI.
+- DTOs validados.
+- Tipagem consistente.
+- Eventos de domínio quando apropriado.
+- Mensageria para processos assíncronos.
+- Identificadores de correlação.
+- Autenticação serviço a serviço.
+
+Exemplos de eventos:
+
+- organization.created.
+- organization.member.invited.
+- organization.member.removed.
+- contact.created.
+- appointment.created.
+- appointment.updated.
+- appointment.cancelled.
+- calendar.sync.requested.
+- calendar.sync.completed.
+- calendar.sync.failed.
+- notification.requested.
+
+Estabeleça esquemas versionados para os eventos.
+
+As mensagens assíncronas deverão possuir identificadores únicos, estratégia de idempotência, política de retentativas e tratamento de mensagens que falhem repetidamente.
+
+Não presuma entrega exatamente uma vez sem verificar a garantia real do mecanismo utilizado.
+
+Projete os consumidores para processar com segurança mensagens que possam ser repetidas.
+
+Implemente o padrão transactional outbox quando for necessário garantir que uma alteração persistida e o evento correspondente não sejam perdidos entre operações separadas.
+
+Não faça o banco de um serviço depender diretamente de consultas às tabelas internas de outro serviço.
+
+Para consultar dados pertencentes a outro domínio, utilize o contrato de serviço correspondente ou uma projeção de leitura explicitamente projetada.
+
+## 6. Banco de dados e propriedade dos dados
+
+Utilize PostgreSQL gerenciado pelo Supabase inicialmente, com limites claros entre os domínios.
+
+Organize os esquemas e as tabelas de acordo com a propriedade de cada serviço.
+
+Considere, por exemplo:
+
+- Organizações e associações: domínio de organizações.
+- Contatos e tags: domínio de CRM.
+- Agendamentos e disponibilidade: domínio de agenda.
+- Conexões Google e mapeamentos de eventos: domínio de integrações.
+- Auditoria: domínio de auditoria.
+- Mensagens e notificações: domínio de notificações.
+
+Cada serviço deverá ser o proprietário de suas tabelas e o único responsável pelas alterações de negócio nessas tabelas.
+
+Utilize funções, permissões de banco e políticas RLS adequadas à estratégia de autenticação e execução de cada serviço.
+
+Não conceda a todos os serviços privilégios administrativos sobre todo o banco.
+
+Não utilize uma chave privilegiada que contorne RLS em todas as operações sem controles equivalentes de autorização.
+
+A estratégia de credenciais por serviço deverá ser documentada, com acesso mínimo necessário e testes de autorização.
+
+O banco compartilhado inicialmente não deverá significar compartilhamento irrestrito de dados entre serviços.
+
+Mantenha a possibilidade de migrar um domínio para um banco independente no futuro, sem exigir a reescrita completa dos demais serviços.
+
+Não implemente separação física de bancos para todos os domínios antecipadamente caso isso não seja necessário para a primeira operação. Projete a fronteira de propriedade desde o início e evolua a infraestrutura conforme a demanda e os requisitos de isolamento.
+
+## 7. Segurança multiempresa em arquitetura distribuída
+
+Todas as requisições protegidas deverão possuir contexto de autenticação e organização devidamente verificado.
+
+Cada serviço que manipule dados de uma empresa deverá validar independentemente:
+- Usuário autenticado.
+- Associação à organização.
+- Permissões efetivas.
+- Propriedade do registro.
+- Estado da conta.
+- Autorização da operação.
+
+O gateway não substitui a autorização nos serviços de domínio.
+
+As políticas RLS continuarão sendo uma camada de defesa adicional no banco, conforme a arquitetura adotada.
+
+Crie testes negativos que tentem atravessar os limites entre organizações por meio de:
+- APIs.
+- IDs manipulados.
+- Eventos.
+- Mensagens.
+- Exportações.
+- Arquivos.
+- Chamadas serviço a serviço.
+- Consultas de relatórios.
+- Tokens de integração.
+
+Não aceite testes que somente confirmem que a interface esconde dados. A autorização deverá ser verificada no backend e no banco de dados.
+
+## 8. Hospedagem e implantação independente
+
+Use Vercel preferencialmente para o frontend Next.js.
+
+Os serviços backend deverão poder ter pipelines de build e implantação separados, utilizando plataformas compatíveis com o tipo de execução de cada aplicação.
+
+Para a API e os serviços, avalie uma hospedagem de containers ou processos independentes, como Railway, Render ou Fly.io, ou outra plataforma com recursos equivalentes.
+
+O worker deverá utilizar um ambiente apropriado para executar continuamente ou conforme o mecanismo de processamento escolhido.
+
+Não force todos os serviços a compartilhar o mesmo deploy apenas para simplificar a configuração.
+
+A Vercel permite organizar aplicações de um monorepo como projetos independentes. Considere também os limites e características do runtime utilizado para decidir onde executar APIs e workers de longa duração.
+
+Caso exista uma estratégia tecnicamente adequada para hospedar algum serviço como função serverless, ela poderá ser utilizada, desde que isso não comprometa suas responsabilidades ou seu funcionamento.
+
+Documente:
+- Serviço.
+- Diretório.
+- Plataforma.
+- Variáveis de ambiente.
+- Domínio.
+- Dependências.
+- Método de build.
+- Método de deploy.
+- Health check.
+- Estratégia de rollback.
+- Monitoramento.
+- Escala.
+- Recuperação de falhas.
+
+Cada serviço deverá ser implantável sem exigir uma nova implantação dos demais quando não houver dependência de contrato incompatível.
+
+## 9. Observabilidade e operação
+
+Implemente uma estratégia compartilhada de observabilidade sem acoplar os serviços.
+
+Inclua:
+- Logs estruturados.
+- Métricas pertinentes.
+- Rastreamento de requisições.
+- Identificadores de correlação.
+- Health checks.
+- Monitoramento de dependências.
+- Alertas de falhas.
+- Indicadores de latência.
+- Indicadores de erros.
+- Monitoramento da fila.
+- Registro de sincronizações.
+- Tratamento de indisponibilidade externa.
+
+Nunca registre senhas, tokens, conteúdos confidenciais ou informações pessoais excessivas.
+
+Permita identificar a origem de um erro sem precisar acessar indiscriminadamente os dados de clientes.
+
+## 10. Testes e integração contínua
+
+Crie testes por serviço e testes que validem a comunicação entre eles.
+
+Inclua:
+- Testes unitários.
+- Testes de integração.
+- Testes de contratos.
+- Testes de autorização.
+- Testes de banco de dados.
+- Testes de mensageria.
+- Testes ponta a ponta.
+- Testes de falha entre serviços.
+- Testes de idempotência.
+- Testes de compatibilidade de APIs.
+- Testes de segurança multiempresa.
+
+Implemente CI para verificar lint, tipos, build, testes e contratos afetados.
+
+Sempre que possível, use o grafo de dependências do monorepo para executar verificações nos aplicativos e pacotes impactados.
+
+Não faça deploy de um serviço quando suas verificações obrigatórias falharem.
+
+Inclua compatibilidade de contratos e estratégia de versionamento para que a implantação independente não quebre os consumidores existentes.
+
+## 11. Regras arquiteturais obrigatórias
+
+1. Não transformar o projeto em um único backend monolítico.
+2. Não concentrar todas as regras de negócio no API Gateway.
+3. Não misturar frontend, domínio, persistência e integrações no mesmo conjunto de arquivos.
+4. Não criar dependências circulares.
+5. Não compartilhar livremente tabelas entre serviços.
+6. Não permitir acesso direto às tabelas internas de outro domínio.
+7. Não compartilhar credenciais privilegiadas entre todos os serviços.
+8. Não duplicar regras de autorização de maneira inconsistente.
+9. Não manter chamadas de rede internas sem timeout e tratamento de erros.
+10. Não ignorar falhas temporárias.
+11. Não presumir entrega de mensagens exatamente uma vez.
+12. Não criar um microserviço para cada tela ou função trivial.
+13. Não exigir implantação conjunta de todos os serviços.
+14. Não compartilhar modelos internos de entidades quando um contrato público versionado for suficiente.
+15. Não criar abstrações sem finalidade concreta.
+16. Não introduzir dependências desnecessárias.
+17. Não deixar serviços sem testes e documentação.
+18. Não afirmar escalabilidade sem testes e limites conhecidos.
+19. Não privilegiar conveniência de desenvolvimento em detrimento do isolamento de dados.
+20. Documentar qualquer desvio dessa arquitetura antes de implementá-lo.
+
+## 12. Entrega arquitetural
+
+Antes de implementar funcionalidades extensas, entregue:
+- Diagrama de arquitetura.
+- Diagrama dos limites entre serviços.
+- Mapa de comunicação.
+- Modelo de propriedade dos dados.
+- Contratos iniciais das APIs.
+- Estratégia de eventos.
+- Estratégia de autenticação e autorização.
+- Estratégia de implantação.
+- Estratégia de testes.
+- Estimativa operacional qualitativa dos custos e da complexidade.
+
+Depois, implemente a estrutura real no repositório e prossiga com as funcionalidades.
+
+Não apresente apenas diagramas ou pastas vazias. Cada serviço criado deverá possuir código inicial executável, configuração, testes básicos e documentação.
+
+Se alguma decisão necessitar de alteração, apresente a justificativa e registre a decisão arquitetural correspondente.
+
+Essa arquitetura deverá permitir que o SecJessica cresça, que novos serviços sejam adicionados, que os domínios aumentem de capacidade e que as integrações sejam ampliadas sem transformar o código em um bloco único e difícil de manter.
+
+**Este adendo substitui qualquer orientação conflitante do prompt anterior que proponha uma arquitetura monolítica.**

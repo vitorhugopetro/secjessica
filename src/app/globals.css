@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 43 82% 96%;
+    --foreground: 193 58% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 193 58% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 193 58% 12%;
+    --primary: 43 89% 52%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 43 82% 96%;
+    --secondary-foreground: 193 58% 12%;
+    --muted: 43 60% 90%;
+    --muted-foreground: 199 19% 43%;
+    --accent: 43 89% 52%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 43 60% 80%;
+    --input: 43 60% 80%;
+    --ring: 43 89% 52%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 193 73% 7%;
+    --foreground: 43 82% 96%;
+    --card: 193 73% 7%;
+    --card-foreground: 43 82% 96%;
+    --popover: 193 73% 7%;
+    --popover-foreground: 43 82% 96%;
+    --primary: 43 89% 52%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 193 60% 12%;
+    --secondary-foreground: 43 82% 96%;
+    --muted: 193 60% 12%;
+    --muted-foreground: 43 60% 70%;
+    --accent: 43 89% 52%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 193 60% 12%;
+    --input: 193 60% 12%;
+    --ring: 43 89% 52%;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  h1, h2, h3, h4, .font-serif, [class*="font-serif"] {
+    font-family: "Playfair Display", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  }
+}

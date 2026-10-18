@@ -10,6 +10,7 @@ import { Calendar, Users, Mail, Clock, Plus, CheckCircle2, RefreshCw, Building2 
 import Link from "next/link";
 import { listReports } from "@/features/reports/actions";
 import { InspirationalBanner } from "@/components/inspirational-banner";
+import { firebaseClient } from "@/lib/firebase/client";
 
 export default function DashboardPage() {
   const { currentCompany, profile, companies } = useAuth();
@@ -28,33 +29,47 @@ export default function DashboardPage() {
   const loadDashboardData = useCallback(async () => {
     if (!currentCompany?.id) return;
     setLoading(true);
-    const res = await listReports(currentCompany.id);
-    if (!res.error && res.data) {
-      const summary = res.data.summary;
+    try {
+      const storedFb = firebaseClient.getStoredAuth();
+      const token = storedFb?.idToken;
+
+      const [appointments, contacts, tasks] = await Promise.all([
+        firebaseClient.listDocs("appointments", token).catch(() => []),
+        firebaseClient.listDocs("contacts", token).catch(() => []),
+        firebaseClient.listDocs("tasks", token).catch(() => []),
+      ]);
+
+      const companyAppointments = appointments.filter((a: any) => !a.company_id || a.company_id === currentCompany.id);
+      const companyContacts = contacts.filter((c: any) => !c.company_id || c.company_id === currentCompany.id);
+      const companyTasks = tasks.filter((t: any) => !t.company_id || t.company_id === currentCompany.id);
+
       const todayStr = new Date().toISOString().slice(0, 10);
-      const todayCount = (res.data.appointments ?? []).filter((a: any) =>
+      const todayCount = companyAppointments.filter((a: any) =>
         a.starts_at?.startsWith(todayStr)
       ).length;
 
       setStats({
-        clients: summary.totalContacts, // Contatos e clientes
-        contacts: summary.totalContacts,
-        appointments: summary.totalAppointments,
+        clients: companyContacts.length,
+        contacts: companyContacts.length,
+        appointments: companyAppointments.length,
         today: todayCount,
-        tasks: summary.totalTasks,
+        tasks: companyTasks.length,
       });
 
       // Próximos compromissos
-      const sorted = [...(res.data.appointments ?? [])]
+      const sorted = [...companyAppointments]
         .filter((a: any) => new Date(a.starts_at) >= new Date(Date.now() - 3600000))
         .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
         .slice(0, 5);
       setUpcoming(sorted);
 
       // Contatos recentes
-      setRecentContacts((res.data.contacts ?? []).slice(0, 5));
+      setRecentContacts(companyContacts.slice(0, 5));
+    } catch (err) {
+      console.warn("Aviso ao carregar dashboard:", err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [currentCompany?.id]);
 
   useEffect(() => {

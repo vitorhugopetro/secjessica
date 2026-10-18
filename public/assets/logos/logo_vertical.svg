@@ -33,9 +33,6 @@
       <stop offset="100%" stop-color="#051017" />
     </linearGradient>
 
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
-    </style>
   </defs>
 
   <g transform="translate(200, 45)">

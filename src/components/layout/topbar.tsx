@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/auth-context";
+import { BrandLogo } from "@/components/brand-logo";
 import { Bell, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -13,11 +14,7 @@ export function Topbar() {
     <header className="sticky top-0 z-10 border-b border-border bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="flex items-center justify-between px-6 py-3">
         <div className="flex items-center gap-4">
-          <img
-            src="/assets/logos/logo_horizontal.svg"
-            alt="Jéssica Secretaria Remota"
-            className="h-8 w-auto cursor-pointer"
-          />
+          <BrandLogo size="sm" showText={false} href="/dashboard" />
           <span className="font-playfair font-semibold text-secjessica-900 tracking-tight hidden sm:block">Jéssica Secretaria Remota</span>
           <button className="md:hidden p-2 text-muted-foreground hover:text-secjessica-900">
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

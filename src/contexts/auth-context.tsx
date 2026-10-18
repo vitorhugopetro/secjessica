@@ -246,7 +246,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (storedFb && data.full_name) {
       await firebaseClient.updateProfile(storedFb.idToken, data.full_name);
     }
-    const { error } = await supabase.from("profiles").upsert({ id: user.id, ...data, updated_at: new Date().toISOString() });
+    
+    // Salva no Firestore
+    try {
+      await firebaseClient.setDoc("profiles", user.id, { id: user.id, ...data }, storedFb?.idToken);
+    } catch {
+      // ignore
+    }
+
+    setProfile((prev: any) => (prev ? { ...prev, ...data } : { id: user.id, full_name: data.full_name || "Usuário", role: "admin", ...data }));
+
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder")) {
+      try {
+        await supabase.from("profiles").upsert({ id: user.id, ...data, updated_at: new Date().toISOString() });
+      } catch {
+        // ignore
+      }
+    }
     return { error: null };
   }, [supabase, user?.id]);
 

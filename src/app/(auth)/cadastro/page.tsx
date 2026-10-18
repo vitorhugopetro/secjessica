@@ -82,8 +82,7 @@ export default function SignUpPage() {
       setError(res.error?.message ?? "Erro ao criar empresa");
       return;
     }
-    router.push("/dashboard");
-    router.refresh();
+    window.location.href = "/dashboard";
   }
 
   async function handleGoogleSignUp() {
@@ -94,8 +93,7 @@ export default function SignUpPage() {
       setError(res.error?.message ?? "Não foi possível conectar com o Google.");
       setGoogleLoading(false);
     } else {
-      router.push("/dashboard");
-      router.refresh();
+      window.location.href = "/dashboard";
     }
   }
 

@@ -11,10 +11,15 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Regras de Usuários
+    // Regras de Usuários e Perfis
     match /users/{userId} {
       allow read: if isAuthenticated();
       allow write: if isOwner(userId);
+    }
+
+    match /profiles/{profileId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
     }
 
     // Regras de Empresas (Multi-Tenant)

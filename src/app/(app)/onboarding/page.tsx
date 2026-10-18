@@ -114,8 +114,7 @@ export default function OnboardingPage() {
           <div className="flex justify-center gap-3 mt-8">
             <Button
               onClick={() => {
-                router.push("/dashboard");
-                router.refresh();
+                window.location.href = "/dashboard";
               }}
               className="bg-secjessica-600 hover:bg-secjessica-500 text-white px-6"
             >

@@ -16,7 +16,7 @@ export function BrandLogo({
   showText = true,
   href = "/",
 }: BrandLogoProps) {
-  const [imgSrc, setImgSrc] = useState<string>("/assets/logos/logo_horizontal.svg");
+  const [imgSrc, setImgSrc] = useState<string>("/assets/logos/logo_transparente.png");
 
   const heightClasses = {
     sm: "h-8",

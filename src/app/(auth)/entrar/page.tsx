@@ -69,8 +69,7 @@ function SignInForm() {
     if (res.error) {
       setError(res.error?.message ?? "Erro ao entrar");
     } else {
-      router.push("/dashboard");
-      router.refresh();
+      window.location.href = "/dashboard";
     }
   }
 
@@ -82,8 +81,7 @@ function SignInForm() {
       setError(res.error?.message ?? "Não foi possível conectar com o Google.");
       setGoogleLoading(false);
     } else {
-      router.push("/dashboard");
-      router.refresh();
+      window.location.href = "/dashboard";
     }
   }
 

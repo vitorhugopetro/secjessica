@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
+import { BrandLogo } from "@/components/brand-logo";
 import {
   LayoutDashboard,
   Building2,
@@ -44,20 +45,8 @@ export function Sidebar() {
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 w-64 border-r border-border bg-card flex flex-col shadow-sm">
-      <div className="flex items-center gap-2.5 px-6 py-5 border-b border-border/50">
-        <img
-          src="/assets/logos/logo_horizontal.svg"
-          alt="Jéssica Secretaria Remota"
-          className="h-8 w-auto"
-        />
-        <div className="flex flex-col">
-          <span className="font-playfair font-bold text-secjessica-900 tracking-tight text-base leading-tight">
-            SecJessica
-          </span>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">
-            Secretariado Remoto
-          </span>
-        </div>
+      <div className="flex items-center px-6 py-4 border-b border-border/50">
+        <BrandLogo size="sm" showText={true} href="/dashboard" />
       </div>
 
       <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto">

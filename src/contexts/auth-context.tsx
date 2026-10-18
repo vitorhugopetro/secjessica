@@ -179,6 +179,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     let isMounted = true;
 
+    // Verifica se há um resultado de redirect pendente (ex: login com Google via redirect)
+    const checkRedirectResult = async () => {
+      try {
+        const fb = await firebaseClient.loadFirebaseSDK();
+        if (fb?.auth) {
+          const result = await fb.auth().getRedirectResult();
+          if (result?.user) {
+            const u = result.user;
+            const idToken = await u.getIdToken();
+            const user: FirebaseUser = {
+              uid: u.uid,
+              email: u.email || "",
+              displayName: u.displayName || u.email?.split("@")[0] || "Usuário Google",
+              idToken,
+              refreshToken: u.refreshToken || "",
+              expiresIn: "3600",
+            };
+            firebaseClient.saveAuth(user);
+            setUser(user);
+            setProfile({ id: u.uid, full_name: u.displayName || "Usuário", role: "admin" });
+            setRole("admin");
+            await fetchCompanies(u.uid, idToken);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch {
+        // redirect result não disponível ou erro, continua normalmente
+      }
+      setLoading(false);
+    };
+
+    void checkRedirectResult();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session: any) => {
       if (!isMounted) return;
       setSession(session);
@@ -235,6 +269,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = useCallback(async () => {
     const { user: fbUser, error: fbError } = await firebaseClient.signInWithGoogle();
+    if (fbError === "redirect_pending") {
+      setLoading(false);
+      return { error: null };
+    }
     if (fbUser) {
       setUser(fbUser);
       setProfile({ id: fbUser.uid, full_name: fbUser.displayName || "Usuário", role: "admin" });

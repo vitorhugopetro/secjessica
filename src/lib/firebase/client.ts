@@ -60,6 +60,11 @@ export const firebaseClient = {
     }
 
     return new Promise((resolve, reject) => {
+      let timeout: NodeJS.Timeout | null = null;
+      const cleanup = () => {
+        if (timeout) clearTimeout(timeout);
+      };
+
       // Carrega firebase-app-compat
       const scriptApp = document.createElement("script");
       scriptApp.src = "https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js";
@@ -68,6 +73,7 @@ export const firebaseClient = {
         const scriptAuth = document.createElement("script");
         scriptAuth.src = "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js";
         scriptAuth.onload = () => {
+          cleanup();
           const fb = (window as any).firebase;
           if (fb && !fb.apps?.length) {
             fb.initializeApp({
@@ -81,11 +87,22 @@ export const firebaseClient = {
           }
           resolve(fb);
         };
-        scriptAuth.onerror = () => reject(new Error("Falha ao carregar Firebase Auth"));
+        scriptAuth.onerror = () => {
+          cleanup();
+          reject(new Error("Falha ao carregar Firebase Auth"));
+        };
         document.head.appendChild(scriptAuth);
       };
-      scriptApp.onerror = () => reject(new Error("Falha ao carregar Firebase App"));
+      scriptApp.onerror = () => {
+        cleanup();
+        reject(new Error("Falha ao carregar Firebase App"));
+      };
       document.head.appendChild(scriptApp);
+
+      timeout = setTimeout(() => {
+        cleanup();
+        reject(new Error("Timeout ao carregar Firebase SDK"));
+      }, 15000);
     });
   },
 
@@ -94,6 +111,10 @@ export const firebaseClient = {
    */
   async signInWithGoogle(): Promise<{ user: FirebaseUser | null; error: string | null }> {
     try {
+      if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes("placeholder")) {
+        return { user: null, error: "Firebase não está configurado. Verifique as variáveis de ambiente." };
+      }
+
       const fb = await this.loadFirebaseSDK();
       if (!fb || !fb.auth) {
         return { user: null, error: "Não foi possível carregar os serviços do Firebase" };
@@ -105,31 +126,47 @@ export const firebaseClient = {
       provider.addScope("profile");
       provider.setCustomParameters({ prompt: "select_account" });
 
-      const result = await auth.signInWithPopup(provider);
-      const u = result.user;
-      const idToken = await u.getIdToken();
+      try {
+        const result = await auth.signInWithPopup(provider);
+        const u = result.user;
+        if (!u) {
+          return { user: null, error: "Nenhum usuário retornado pelo Google" };
+        }
+        const idToken = await u.getIdToken();
 
-      const user: FirebaseUser = {
-        uid: u.uid,
-        email: u.email || "",
-        displayName: u.displayName || u.email?.split("@")[0] || "Usuário Google",
-        idToken,
-        refreshToken: u.refreshToken || "",
-        expiresIn: "3600",
-      };
-
-      this.saveAuth(user);
-      return { user, error: null };
-    } catch (err: any) {
-      if (err.code === "auth/popup-closed-by-user" || err.code === "auth/cancelled-popup-request") {
-        return { user: null, error: "A janela de login com o Google foi fechada." };
-      }
-      if (err.code === "auth/configuration-not-found" || err.message?.includes("CONFIGURATION_NOT_FOUND")) {
-        return {
-          user: null,
-          error: "O provedor Google precisa ser ativado no Firebase Console (Authentication > Sign-in method > Google).",
+        const user: FirebaseUser = {
+          uid: u.uid,
+          email: u.email || "",
+          displayName: u.displayName || u.email?.split("@")[0] || "Usuário Google",
+          idToken,
+          refreshToken: u.refreshToken || "",
+          expiresIn: "3600",
         };
+
+        this.saveAuth(user);
+        return { user, error: null };
+      } catch (popupErr: any) {
+        // Se popup foi bloqueado, tenta redirect como fallback
+        if (popupErr.code === "auth/popup-blocked" || popupErr.message?.includes("popup")) {
+          try {
+            await auth.signInWithRedirect(provider);
+            return { user: null, error: "redirect_pending" };
+          } catch (redirectErr: any) {
+            return { user: null, error: redirectErr.message || "Falha ao abrir janela de login do Google" };
+          }
+        }
+        if (popupErr.code === "auth/popup-closed-by-user" || popupErr.code === "auth/cancelled-popup-request") {
+          return { user: null, error: "A janela de login com o Google foi fechada." };
+        }
+        if (popupErr.code === "auth/configuration-not-found" || popupErr.message?.includes("CONFIGURATION_NOT_FOUND")) {
+          return {
+            user: null,
+            error: "O provedor Google precisa ser ativado no Firebase Console (Authentication > Sign-in method > Google).",
+          };
+        }
+        return { user: null, error: popupErr.message || "Erro ao conectar com Google" };
       }
+    } catch (err: any) {
       return { user: null, error: err.message || "Erro ao conectar com Google" };
     }
   },

@@ -1,6 +1,13 @@
 "use server";
 
-import { requireOrganization, auditLog, getServerSupabase } from "@/server/lib/organizations";
+import { requireOrganization, auditLog } from "@/server/lib/organizations";
+import { firebaseClient } from "@/lib/firebase/client";
+import {
+  firebaseGetDoc,
+  firebaseListDocs,
+  firebaseSetDoc,
+  firebaseDeleteDoc,
+} from "@/lib/firebase/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -14,83 +21,78 @@ const orgSchema = z.object({
   segment: z.string().optional(),
 });
 
-export async function createFirstOrganization(prevState: any, formData: FormData) {
-  const supabase = await getServerSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: "Não autenticado" };
-
+export async function createOrganization(prevState: any, formData: FormData) {
   const raw = Object.fromEntries(formData.entries());
   const parsed = orgSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.flatten().fieldErrors };
 
   const slug = parsed.data.slug;
-  const { data: existing } = await supabase
-    .from("companies")
-    .select("id")
-    .eq("slug", slug)
-    .single();
-  if (existing) return { error: "Slug já está em uso" };
+  const existing = await firebaseClient.queryDocs("companies", { field: "slug", value: slug });
+  if (existing && existing.length > 0) {
+    return { error: "Slug já está em uso" };
+  }
 
-  const { data: org, error: insertError } = await supabase
-    .from("companies")
-    .insert({
-      name: parsed.data.name,
-      slug,
-      email: parsed.data.email ?? null,
-      phone: parsed.data.phone ?? null,
-      address: parsed.data.address ?? null,
-      timezone: parsed.data.timezone,
-      segment: parsed.data.segment ?? null,
-      owner_id: user.id,
-    })
-    .select()
-    .single();
+  const auth = await requireOrganization("");
+  if (!auth.authorized || !auth.user) return { error: "Não autenticado" };
 
-  if (insertError) return { error: insertError.message };
+  const companyId = `comp_${Date.now()}`;
+  const company = {
+    id: companyId,
+    name: parsed.data.name,
+    slug,
+    email: parsed.data.email ?? null,
+    phone: parsed.data.phone ?? null,
+    address: parsed.data.address ?? null,
+    timezone: parsed.data.timezone,
+    segment: parsed.data.segment ?? null,
+    owner_id: auth.user.id,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
 
-  await supabase.from("company_members").insert({
-    company_id: org.id,
-    user_id: user.id,
+  const res = await firebaseClient.setDoc("companies", companyId, company);
+  if (!res.success) return { error: res.error };
+
+  await firebaseClient.setDoc("company_members", `${companyId}_${auth.user.id}`, {
+    id: `${companyId}_${auth.user.id}`,
+    company_id: companyId,
+    user_id: auth.user.id,
     role: "admin",
+    created_at: new Date().toISOString(),
   });
 
   await auditLog({
-    orgId: org.id,
-    userId: user.id,
+    orgId: companyId,
+    userId: auth.user.id,
     action: "organization.created",
     entity: "companies",
-    entityId: org.id,
-    metadata: { name: org.name, slug },
+    entityId: companyId,
+    metadata: { name: company.name, slug },
   });
 
   revalidatePath("/empresas");
-  return { data: org, error: null };
+  return { data: company, error: null };
+}
+
+export async function createFirstOrganization(prevState: any, formData: FormData) {
+  return createOrganization(prevState, formData);
 }
 
 export async function listOrganizations() {
   const { authorized, orgIds, error } = await getCurrentUserOrgIdsSafe();
   if (!authorized) return { error };
 
-  const supabase = await getServerSupabase();
-  const { data } = await supabase
-    .from("companies")
-    .select("*, company_members!inner(role)")
-    .in("id", orgIds)
-    .order("created_at", { ascending: false });
-  return { data: data ?? [], error: null };
+  const data = await firebaseListDocs("companies");
+  const filtered = data.filter((d: any) => orgIds.includes(d.id));
+  return { data: filtered, error: null };
 }
 
 export async function getOrganization(orgId: string) {
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { error: auth.error };
 
-  const supabase = await getServerSupabase();
-  const { data, error } = await supabase
-    .from("companies")
-    .select("*")
-    .eq("id", orgId)
-    .single();
-  return { data, error: error?.message ?? null };
+  const data = await firebaseGetDoc("companies", orgId);
+  return { data, error: data ? null : "Empresa não encontrada" };
 }
 
 export async function updateOrganization(orgId: string, prevState: any, formData: FormData) {
@@ -101,19 +103,16 @@ export async function updateOrganization(orgId: string, prevState: any, formData
   const parsed = orgSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.flatten().fieldErrors };
 
-  const { error } = await (await getServerSupabase())
-    .from("companies")
-    .update({
-      name: parsed.data.name,
-      slug: parsed.data.slug,
-      email: parsed.data.email ?? null,
-      phone: parsed.data.phone ?? null,
-      address: parsed.data.address ?? null,
-      timezone: parsed.data.timezone,
-      segment: parsed.data.segment ?? null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", orgId);
+  const { error } = await firebaseSetDoc("companies", orgId, {
+    name: parsed.data.name,
+    slug: parsed.data.slug,
+    email: parsed.data.email ?? null,
+    phone: parsed.data.phone ?? null,
+    address: parsed.data.address ?? null,
+    timezone: parsed.data.timezone,
+    segment: parsed.data.segment ?? null,
+    updated_at: new Date().toISOString(),
+  });
 
   await auditLog({
     orgId,
@@ -125,17 +124,14 @@ export async function updateOrganization(orgId: string, prevState: any, formData
 
   revalidatePath("/empresas");
   revalidatePath(`/empresas/${orgId}`);
-  return { error: error?.message ?? null };
+  return { error: error ? String(error) : null };
 }
 
 export async function deleteOrganization(orgId: string) {
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { error: auth.error };
 
-  const { error } = await (await getServerSupabase())
-    .from("companies")
-    .delete()
-    .eq("id", orgId);
+  const { error } = await firebaseDeleteDoc("companies", orgId);
 
   await auditLog({
     orgId,
@@ -146,16 +142,11 @@ export async function deleteOrganization(orgId: string) {
   });
 
   revalidatePath("/empresas");
-  return { error: error?.message ?? null };
+  return { error: error ? String(error) : null };
 }
 
 async function getCurrentUserOrgIdsSafe() {
-  const supabase = await getServerSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { user, orgIds, error } = await requireOrganization("");
   if (!user) return { authorized: false, orgIds: [] as string[], error: "Não autenticado" };
-  const { data: members } = await supabase
-    .from("company_members")
-    .select("company_id")
-    .eq("user_id", user.id);
-  return { authorized: true, user, orgIds: (members ?? []).map((m) => m.company_id), error: null };
+  return { authorized: true, user, orgIds, error: null };
 }

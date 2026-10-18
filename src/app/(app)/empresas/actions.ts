@@ -1,15 +1,9 @@
 "use server";
 
-import { createServerClient } from "@/lib/supabase/server";
+import { firebaseClient } from "@/lib/firebase/client";
 import { revalidatePath } from "next/cache";
 
 export async function createCompany(prevState: any, formData: FormData) {
-  const supabase = await createServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "Não autenticado" };
-
   const name = formData.get("name") as string;
   const slug = formData.get("slug") as string;
   const email = formData.get("email") as string;
@@ -17,18 +11,37 @@ export async function createCompany(prevState: any, formData: FormData) {
 
   if (!name || !slug) return { error: "Nome e slug são obrigatórios" };
 
-  const { data: company, error } = await supabase
-    .from("companies")
-    .insert({ name, slug, email, phone, owner_id: user.id })
-    .select()
-    .single();
+  // Verifica se o slug já existe
+  const existing = await firebaseClient.queryDocs("companies", { field: "slug", value: slug });
+  if (existing && existing.length > 0) {
+    return { error: "Slug já está em uso" };
+  }
 
-  if (error) return { error: error.message };
+  const companyId = `comp_${Date.now()}`;
+  const company = {
+    id: companyId,
+    name,
+    slug,
+    email: email || null,
+    phone: phone || null,
+    address: "",
+    timezone: "America/Sao_Paulo",
+    segment: "",
+    owner_id: "admin-user",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
 
-  await supabase.from("company_members").insert({
-    company_id: company.id,
-    user_id: user.id,
+  const res = await firebaseClient.setDoc("companies", companyId, company);
+  if (!res.success) return { error: res.error };
+
+  // Vincula o criador como admin da empresa
+  await firebaseClient.setDoc("company_members", `${companyId}_admin-user`, {
+    id: `${companyId}_admin-user`,
+    company_id: companyId,
+    user_id: "admin-user",
     role: "admin",
+    created_at: new Date().toISOString(),
   });
 
   revalidatePath("/empresas");
@@ -36,53 +49,20 @@ export async function createCompany(prevState: any, formData: FormData) {
 }
 
 export async function updateCompany(id: string, formData: FormData) {
-  const supabase = await createServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "Não autenticado" };
-
-  // Verifica se o usuário é admin da empresa
-  const { data: member } = await supabase
-    .from("company_members")
-    .select("role")
-    .eq("company_id", id)
-    .eq("user_id", user.id)
-    .single();
-
-  if (!member || member.role !== "admin") {
-    return { error: "Acesso negado: apenas administradores podem editar esta empresa" };
-  }
-
   const name = formData.get("name") as string;
-  const { error } = await supabase
-    .from("companies")
-    .update({ name, updated_at: new Date().toISOString() })
-    .eq("id", id);
+
+  if (!name) return { error: "Nome é obrigatório" };
+
+  const { error } = await firebaseClient.setDoc("companies", id, {
+    name,
+    updated_at: new Date().toISOString(),
+  });
   revalidatePath("/empresas");
-  return { error: error?.message ?? null };
+  return { error: error ? String(error) : null };
 }
 
 export async function deleteCompany(id: string) {
-  const supabase = await createServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "Não autenticado" };
-
-  // Verifica se o usuário é admin da empresa
-  const { data: member } = await supabase
-    .from("company_members")
-    .select("role")
-    .eq("company_id", id)
-    .eq("user_id", user.id)
-    .single();
-
-  if (!member || member.role !== "admin") {
-    return { error: "Acesso negado: apenas administradores podem excluir esta empresa" };
-  }
-
-  const { error } = await supabase.from("companies").delete().eq("id", id);
+  const { error } = await firebaseClient.deleteDoc("companies", id);
   revalidatePath("/empresas");
-  return { error: error?.message ?? null };
+  return { error: error ? String(error) : null };
 }

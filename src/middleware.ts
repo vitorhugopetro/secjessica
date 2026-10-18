@@ -1,34 +1,10 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { firebaseClient } from "@/lib/firebase/client";
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
+  const response = NextResponse.next({
     request: { headers: request.headers },
   });
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-anon-key";
-
-  const supabase = createServerClient(supabaseUrl, supabaseKey, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        response = NextResponse.next({
-          request,
-        });
-        cookiesToSet.forEach(({ name, value, options }) =>
-          response.cookies.set(name, value, options)
-        );
-      },
-    },
-  });
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   const url = request.nextUrl.clone();
   const isAuthRoute = url.pathname.startsWith("/entrar") || url.pathname.startsWith("/cadastro");
@@ -46,14 +22,29 @@ export async function middleware(request: NextRequest) {
     url.pathname.startsWith("/notificacoes") ||
     url.pathname.startsWith("/onboarding");
 
+  // Verifica se o usuário está autenticado via Firebase (verifica token no cookie)
+  const firebaseToken = request.cookies.get("secjessica:firebase_auth")?.value;
+  let isAuthenticated = false;
+
+  if (firebaseToken) {
+    try {
+      const data = JSON.parse(firebaseToken);
+      if (data && data.idToken && data.uid) {
+        isAuthenticated = true;
+      }
+    } catch {
+      // Token inválido, trata como não autenticado
+    }
+  }
+
   // Rotas de app exigem autenticação
-  if (isAppRoute && !user && !supabaseUrl.includes("placeholder")) {
+  if (isAppRoute && !isAuthenticated) {
     url.pathname = "/entrar";
     return NextResponse.redirect(url);
   }
 
   // Rotas de auth redirecionam autenticados para o painel
-  if (isAuthRoute && user) {
+  if (isAuthRoute && isAuthenticated) {
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }

@@ -1,7 +1,7 @@
 "use server";
 
 import { requireOrganization, auditLog } from "@/server/lib/organizations";
-import { createServerClient } from "@/lib/supabase/server";
+import { firebaseClient } from "@/lib/firebase/client";
 import { revalidatePath } from "next/cache";
 import { sendWhatsAppMessage, sanitizeWhatsAppPhone } from "./index";
 
@@ -38,8 +38,6 @@ export async function sendNpsSurvey(
     return { error: "Telefone inválido para disparo de NPS" };
   }
 
-  const supabase = await createServerClient();
-
   const message = [
     `⭐ *Pesquisa de Satisfação - Sec Jessica*`,
     ``,
@@ -64,12 +62,14 @@ export async function sendNpsSurvey(
   });
 
   if (sendRes.success) {
-    await supabase.from("nps_surveys").insert({
+    const surveyId = `nps_${Date.now()}`;
+    await firebaseClient.setDoc("nps_surveys", surveyId, {
       company_id: orgId,
       appointment_id: data.appointmentId || null,
       patient_name: data.patientName,
       phone: cleanPhone,
       status: "sent",
+      created_at: new Date().toISOString(),
     });
   }
 
@@ -87,32 +87,22 @@ export async function recordNpsResponse(
   feedback?: string
 ) {
   const cleanPhone = await sanitizeWhatsAppPhone(phone);
-  const supabase = await createServerClient();
 
   // Busca a pesquisa pendente mais recente deste telefone
-  const { data: survey } = await supabase
-    .from("nps_surveys")
-    .select("id")
-    .eq("company_id", orgId)
-    .eq("phone", cleanPhone)
-    .eq("status", "sent")
-    .order("sent_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const allSurveys = await firebaseClient.listDocs<any>("nps_surveys");
+  const survey = allSurveys
+    .filter((s: any) => s.company_id === orgId && s.phone === cleanPhone && s.status === "sent")
+    .sort((a: any, b: any) => (b.sent_at || "").localeCompare(a.sent_at || ""))[0];
 
   if (survey) {
-    await supabase
-      .from("nps_surveys")
-      .update({
-        score,
-        feedback: feedback || null,
-        answered_at: new Date().toISOString(),
-        status: "answered",
-      })
-      .eq("id", survey.id);
+    await firebaseClient.setDoc("nps_surveys", survey.id, {
+      score,
+      feedback: feedback || null,
+      answered_at: new Date().toISOString(),
+      status: "answered",
+    });
   } else {
-    // Insere como resposta direta
-    await supabase.from("nps_surveys").insert({
+    await firebaseClient.setDoc("nps_surveys", `nps_${Date.now()}`, {
       company_id: orgId,
       patient_name: "Paciente",
       phone: cleanPhone,
@@ -134,19 +124,10 @@ export async function listNpsSurveys(orgId: string) {
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { data: [], stats: { total: 0, average: 0, promoters: 0 }, error: auth.error };
 
-  const supabase = await createServerClient();
-  const { data, error } = await supabase
-    .from("nps_surveys")
-    .select("*")
-    .eq("company_id", orgId)
-    .order("sent_at", { ascending: false })
-    .limit(100);
+  const allSurveys = await firebaseClient.listDocs<any>("nps_surveys");
+  const surveys = allSurveys.filter((s: any) => s.company_id === orgId);
+  surveys.sort((a: any, b: any) => (b.sent_at || "").localeCompare(a.sent_at || ""));
 
-  if (error) {
-    return { data: [], stats: { total: 0, average: 0, promoters: 0 }, error: error.message };
-  }
-
-  const surveys = (data as NpsSurveyEntry[]) || [];
   const answered = surveys.filter((s) => s.score !== null && s.score !== undefined);
   const total = answered.length;
   const sum = answered.reduce((acc, curr) => acc + (curr.score || 0), 0);

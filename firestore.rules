@@ -11,82 +11,113 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Regras de Usuários e Perfis
+    // Verifica se o usuário pertence à empresa (via company_members)
+    function isMemberOfCompany(companyId) {
+      return isAuthenticated() && (
+        exists(/databases/$(database)/documents/company_members/$(companyId + '_' + request.auth.uid)) ||
+        exists(/databases/$(database)/documents/company_members/$(request.auth.uid + '_' + companyId))
+      );
+    }
+
+    // --- Usuários e Perfis ---
     match /users/{userId} {
-      allow read: if isAuthenticated();
+      allow read: if isOwner(userId);
       allow write: if isOwner(userId);
     }
 
     match /profiles/{profileId} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
+      allow read: if isOwner(profileId);
+      allow write: if isOwner(profileId);
     }
 
-    // Regras de Empresas (Multi-Tenant)
+    // --- Empresas (Multi-Tenant) ---
     match /companies/{companyId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated() && isMemberOfCompany(companyId);
+      allow write: if isAuthenticated() && isMemberOfCompany(companyId);
     }
 
-    // Coleções vinculadas à empresa (Clientes, Contatos, Agendamentos, Tarefas, WhatsApp, etc)
+    // --- Membros de Empresa ---
+    match /company_members/{memberId} {
+      allow read: if isAuthenticated() && isMemberOfCompany(resource.data.company_id);
+      allow write: if isAuthenticated() && isMemberOfCompany(request.resource.data.company_id);
+    }
+
+    // --- Clientes (multi-empresa) ---
     match /clients/{clientId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated() && isMemberOfCompany(resource.data.company_id);
+      allow write: if isAuthenticated() && isMemberOfCompany(request.resource.data.company_id);
     }
 
+    // --- Contatos (multi-empresa) ---
     match /contacts/{contactId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated() && isMemberOfCompany(resource.data.company_id);
+      allow write: if isAuthenticated() && isMemberOfCompany(request.resource.data.company_id);
     }
 
+    // --- Agendamentos (multi-empresa) ---
     match /appointments/{appointmentId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated() && isMemberOfCompany(resource.data.company_id);
+      allow write: if isAuthenticated() && isMemberOfCompany(request.resource.data.company_id);
     }
 
+    // --- Tarefas (multi-empresa) ---
     match /tasks/{taskId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated() && isMemberOfCompany(resource.data.company_id);
+      allow write: if isAuthenticated() && isMemberOfCompany(request.resource.data.company_id);
     }
 
+    // --- WhatsApp ---
     match /whatsapp_instances/{instanceId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated() && isMemberOfCompany(resource.data.company_id);
+      allow write: if isAuthenticated() && isMemberOfCompany(request.resource.data.company_id);
     }
 
     match /whatsapp_messages/{messageId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated() && isMemberOfCompany(resource.data.company_id);
+      allow write: if isAuthenticated() && isMemberOfCompany(request.resource.data.company_id);
     }
 
     match /whatsapp_quick_replies/{replyId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated() && isMemberOfCompany(resource.data.company_id);
+      allow write: if isAuthenticated() && isMemberOfCompany(request.resource.data.company_id);
     }
 
     // Fila de Espera para Encaixes
     match /appointment_waitlist/{waitlistId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated() && isMemberOfCompany(resource.data.company_id);
+      allow write: if isAuthenticated() && isMemberOfCompany(request.resource.data.company_id);
     }
 
-    // Pesquisas NPS de Satisfação
+    // Pesquisas NPS
     match /nps_surveys/{surveyId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated() && isMemberOfCompany(resource.data.company_id);
       allow create: if true; // Respostas via webhook/público
     }
 
     // Formulários de Pré-Atendimento e Anamnese
     match /pre_anamnese_forms/{formId} {
-      allow read, update, delete: if isAuthenticated();
+      allow read, update, delete: if isAuthenticated() && isMemberOfCompany(resource.data.company_id);
       allow create: if true; // Paciente preenche via link externo público
     }
 
     // Comprovantes Pix com OCR
     match /pix_receipts/{receiptId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated() && isMemberOfCompany(resource.data.company_id);
+      allow write: if isAuthenticated() && isMemberOfCompany(request.resource.data.company_id);
       allow create: if true; // Webhooks podem criar comprovantes detectados
     }
 
+    // Logs de Auditoria
     match /audit_logs/{logId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
+      allow read: if isAuthenticated() && isMemberOfCompany(resource.data.company_id);
+      allow create: if isAuthenticated() && isMemberOfCompany(request.resource.data.company_id);
       allow update, delete: if false; // Logs são imutáveis
     }
 
+    // Notificações
     match /notifications/{notificationId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated() && isMemberOfCompany(resource.data.company_id);
+      allow write: if isAuthenticated() && isMemberOfCompany(request.resource.data.company_id);
     }
   }
 }

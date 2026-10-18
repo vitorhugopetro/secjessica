@@ -1,22 +1,21 @@
 "use server";
 
 import { requireOrganization, auditLog } from "@/server/lib/organizations";
-import { createServerClient } from "@/lib/supabase/server";
+import { firebaseClient } from "@/lib/firebase/client";
 
 export async function listReports(orgId: string) {
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { data: null, error: auth.error };
 
-  const supabase = await createServerClient();
   const [appointmentsRes, contactsRes, tasksRes] = await Promise.all([
-    supabase.from("appointments").select("id, title, status, starts_at, ends_at, client:clients(name)").eq("company_id", orgId),
-    supabase.from("contacts").select("id, name, created_at").eq("company_id", orgId),
-    supabase.from("tasks").select("id, title, status, due_at").eq("company_id", orgId),
+    firebaseClient.listDocs<any>("appointments"),
+    firebaseClient.listDocs<any>("contacts"),
+    firebaseClient.listDocs<any>("tasks"),
   ]);
 
-  const appointments = appointmentsRes.data ?? [];
-  const contacts = contactsRes.data ?? [];
-  const tasks = tasksRes.data ?? [];
+  const appointments = appointmentsRes.filter((a: any) => a.company_id === orgId);
+  const contacts = contactsRes.filter((c: any) => c.company_id === orgId);
+  const tasks = tasksRes.filter((t: any) => t.company_id === orgId);
 
   return {
     data: {
@@ -41,27 +40,23 @@ export async function exportAppointmentsCSV(orgId: string) {
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { data: "", error: auth.error };
 
-  const supabase = await createServerClient();
-  const { data } = await supabase
-    .from("appointments")
-    .select("title, starts_at, ends_at, status, client:clients(name)")
-    .eq("company_id", orgId)
-    .order("starts_at", { ascending: true });
+  const appointmentsRes = await firebaseClient.listDocs<any>("appointments");
+  const data = appointmentsRes.filter((a: any) => a.company_id === orgId).sort((a: any, b: any) => (a.starts_at || "").localeCompare(b.starts_at || ""));
 
   await auditLog({
     orgId,
-    userId: auth.user!.id,
+    userId: "admin-user",
     action: "appointments.exported.csv",
     entity: "appointments",
-    metadata: { count: (data ?? []).length },
+    metadata: { count: data.length },
   });
 
-  const rows = (data ?? []).map((a) => [
+  const rows = data.map((a: any) => [
     a.title,
     a.starts_at,
     a.ends_at,
     a.status,
-    (Array.isArray(a.client) ? a.client[0]?.name : (a.client as any)?.name) ?? "",
+    (a.client?.name || "") || "",
   ]);
 
   const csv = [

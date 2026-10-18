@@ -1,7 +1,7 @@
 "use server";
 
 import { requireOrganization, auditLog } from "@/server/lib/organizations";
-import { createServerClient } from "@/lib/supabase/server";
+import { firebaseClient } from "@/lib/firebase/client";
 import { revalidatePath } from "next/cache";
 import { parsePixReceiptText } from "../lib/pix-ocr";
 
@@ -33,41 +33,39 @@ export async function processPixReceipt(
   }
 ) {
   const parsed = parsePixReceiptText(data.rawText);
-  const supabase = await createServerClient();
+  const receiptId = `pix_${Date.now()}`;
+  const receipt = {
+    id: receiptId,
+    company_id: orgId,
+    appointment_id: data.appointmentId || null,
+    sender_phone: data.senderPhone,
+    detected_amount: parsed.amount,
+    detected_date: parsed.date ? new Date().toISOString() : null,
+    transaction_id: parsed.transactionId,
+    bank_name: parsed.bankName,
+    raw_ocr_text: data.rawText,
+    image_url: data.imageUrl || null,
+    status: "pending_verification",
+    created_at: new Date().toISOString(),
+  };
 
-  const { data: record, error } = await supabase
-    .from("pix_receipts")
-    .insert({
-      company_id: orgId,
-      appointment_id: data.appointmentId || null,
-      sender_phone: data.senderPhone,
-      detected_amount: parsed.amount,
-      detected_date: parsed.date ? new Date().toISOString() : null,
-      transaction_id: parsed.transactionId,
-      bank_name: parsed.bankName,
-      raw_ocr_text: data.rawText,
-      image_url: data.imageUrl || null,
-      status: "pending_verification",
-    })
-    .select()
-    .single();
-
-  if (error) {
-    return { error: error.message };
-  }
+  const res = await firebaseClient.setDoc("pix_receipts", receiptId, receipt);
+  if (!res.success) return { error: res.error };
 
   // Notificação no sistema
-  await supabase.from("notifications").insert({
+  await firebaseClient.setDoc("notifications", `notification_${Date.now()}`, {
     company_id: orgId,
     user_id: "system",
     title: "Comprovante Pix Recebido",
     body: `Comprovante de ${parsed.formattedAmount || "Pix"} recebido de ${data.senderPhone}. Aguarda conferência.`,
     kind: "pix_receipt",
-    metadata: { receiptId: record?.id, parsed },
+    metadata: { receiptId, parsed },
+    created_at: new Date().toISOString(),
+    read: false,
   });
 
   revalidatePath("/whatsapp");
-  return { success: true, record, parsed };
+  return { success: true, record: receipt, parsed };
 }
 
 /**
@@ -77,16 +75,11 @@ export async function listPixReceipts(orgId: string): Promise<{ data: PixReceipt
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { data: [], error: auth.error };
 
-  const supabase = await createServerClient();
-  const { data, error } = await supabase
-    .from("pix_receipts")
-    .select("*")
-    .eq("company_id", orgId)
-    .order("created_at", { ascending: false })
-    .limit(50);
+  const allReceipts = await firebaseClient.listDocs<any>("pix_receipts");
+  const receipts = allReceipts.filter((r: any) => r.company_id === orgId);
+  receipts.sort((a: any, b: any) => (b.created_at || "").localeCompare(a.created_at || ""));
 
-  if (error) return { data: [], error: error.message };
-  return { data: (data as PixReceiptEntry[]) || [], error: null };
+  return { data: receipts as PixReceiptEntry[], error: null };
 }
 
 /**
@@ -100,28 +93,22 @@ export async function updatePixReceiptStatus(
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { error: auth.error };
 
-  const supabase = await createServerClient();
-  const { data, error } = await supabase
-    .from("pix_receipts")
-    .update({
-      status,
-      verified_by: auth.user!.id,
-    })
-    .eq("id", receiptId)
-    .eq("company_id", orgId)
-    .select()
-    .single();
+  const { error } = await firebaseClient.setDoc("pix_receipts", receiptId, {
+    status,
+    verified_by: "admin-user",
+    updated_at: new Date().toISOString(),
+  });
 
-  if (error) return { error: error.message };
+  if (error) return { error: String(error) };
 
   await auditLog({
     orgId,
-    userId: auth.user!.id,
+    userId: "admin-user",
     action: `pix_receipt.${status}`,
     entity: "pix_receipts",
     entityId: receiptId,
   });
 
   revalidatePath("/whatsapp");
-  return { success: true, data };
+  return { success: true, data: null };
 }

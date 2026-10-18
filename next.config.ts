@@ -2,9 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   distDir: ".next_build",
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   async headers() {
     return [
       {

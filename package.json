@@ -11,7 +11,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "changelog": "node scripts/update-changelog.js"
+    "changelog": "node scripts/update-changelog.js",
+    "state": "node scripts/update-state.js"
   },
   "dependencies": {
     "@googleapis/calendar": "^20.1.0",

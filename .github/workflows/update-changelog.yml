@@ -20,8 +20,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Update changelog from git commits
-        run: npm run changelog
+      - name: Update changelog and project state from git commits
+        run: npm run state
 
       - name: Commit and push changelog changes
         run: |

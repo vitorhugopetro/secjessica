@@ -422,18 +422,27 @@ export async function sendAppointmentWhatsAppNotification(
     minute: "2-digit",
   });
 
-  // Modelos dinâmicos por tipo
+  // Modelos dinâmicos por tipo com Links de Mobilidade e Ficha de Pré-Atendimento
+  const locationText = appointment.location || appointment.company?.address;
+  let mobilitySection = "";
+  if (locationText) {
+    const encoded = encodeURIComponent(locationText.trim());
+    mobilitySection = `\n📍 *Endereço:* ${locationText}\n🗺️ *Maps:* https://www.google.com/maps/search/?api=1&query=${encoded}\n🚗 *Waze:* https://waze.com/ul?q=${encoded}&navigate=yes\n🚕 *Uber:* https://m.uber.com/ul/?action=setPickup&dropoff[formatted_address]=${encoded}\n`;
+  }
+
+  const anamneseSection = `\n📋 *Ficha de Pré-Atendimento:* https://secjessica.web.app/pre-atendimento/${appointment.id}\n`;
+
   let message = "";
   if (kind === "confirmation") {
-    message = `Olá, *${clientName}*! Tudo bem?\n\nConfirmamos seu agendamento para o atendimento *"${appointment.title}"* na *${companyName}*:\n\n📅 *Data:* ${formattedDate}\n⏰ *Horário:* ${formattedTime}\n${appointment.location ? `📍 *Local:* ${appointment.location}\n` : ""}${appointment.meeting_link ? `🔗 *Link da Reunião:* ${appointment.meeting_link}\n` : ""}\nPor favor, responda com *1 para CONFIRMAR* ou *2 para REAGENDAR*.\n\nAtenciosamente,\n*Equipe SecJessica & ${companyName}*`;
+    message = `Olá, *${clientName}*! Tudo bem?\n\nConfirmamos seu agendamento para *"${appointment.title}"* na *${companyName}*:\n\n📅 *Data:* ${formattedDate}\n⏰ *Horário:* ${formattedTime}\n${mobilitySection}${appointment.meeting_link ? `🔗 *Link da Reunião:* ${appointment.meeting_link}\n` : ""}${anamneseSection}\n👉 *Responda:* [1] ✅ Confirmar | [2] 🔄 Reagendar\n\nAtenciosamente,\n*Equipe Sec Jessica & ${companyName}*`;
   } else if (kind === "reminder") {
-    message = `⏰ *Lembrete de Compromisso*\n\nOlá, *${clientName}*! Lembramos do seu agendamento amanhã:\n\n📌 *Assunto:* ${appointment.title}\n📅 *Data:* ${formattedDate}\n⏰ *Horário:* ${formattedTime}\n${appointment.location ? `📍 *Endereço:* ${appointment.location}\n` : ""}\nEstamos ansiosos pelo seu atendimento. Qualquer imprevisto, nos avise por aqui!`;
+    message = `⏰ *Lembrete de Compromisso (D-1)*\n\nOlá, *${clientName}*! Lembramos do seu agendamento amanhã:\n\n📌 *Assunto:* ${appointment.title}\n📅 *Data:* ${formattedDate}\n⏰ *Horário:* ${formattedTime}\n${mobilitySection}${anamneseSection}\nEstamos ansiosos pelo seu atendimento! Qualquer imprevisto, responda por aqui.`;
   } else if (kind === "reschedule") {
-    message = `🔄 *Aviso de Reagendamento*\n\nOlá, *${clientName}*! Seu agendamento na *${companyName}* foi reagendado com sucesso para:\n\n📅 *Nova Data:* ${formattedDate}\n⏰ *Novo Horário:* ${formattedTime}\n\nCaso tenha alguma dúvida, estamos à disposição.`;
+    message = `🔄 *Aviso de Reagendamento*\n\nOlá, *${clientName}*! Seu agendamento na *${companyName}* foi atualizado para:\n\n📅 *Nova Data:* ${formattedDate}\n⏰ *Novo Horário:* ${formattedTime}\n${mobilitySection}\nCaso tenha alguma dúvida, estamos à disposição.`;
   } else if (kind === "cancellation") {
     message = `⚠️ *Cancelamento de Agendamento*\n\nOlá, *${clientName}*, confirmamos o cancelamento do agendamento *"${appointment.title}"* que estava previsto para ${formattedDate} às ${formattedTime}.\n\nPara agendar uma nova data e horário, basta nos enviar uma mensagem!`;
   } else if (kind === "pix") {
-    message = `💳 *Orientações de Pagamento / Chave Pix*\n\nOlá, *${clientName}*! Seguem os dados para pagamento ou garantia da sua reserva para o agendamento de ${formattedDate}:\n\n🔑 *Chave Pix:* ${appointment.company?.phone || "contato@secjessica.com.br"}\nBeneficiário: *${companyName}*\n\nApós a realização, por gentileza nos envie o comprovante por aqui. Obrigado!`;
+    message = `💳 *Orientações de Pagamento / Chave Pix*\n\nOlá, *${clientName}*! Seguem os dados para pagamento ou garantia da sua reserva para o agendamento de ${formattedDate}:\n\n🔑 *Chave Pix:* ${appointment.company?.phone || "contato@secjessica.com.br"}\nBeneficiário: *${companyName}*\n\nApós a realização, por gentileza nos envie a foto ou comprovante por aqui para validação automática. Obrigado!`;
   }
 
   // Envia a mensagem

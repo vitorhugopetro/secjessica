@@ -9,7 +9,7 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
-    include: ["src/tests/unit/**/*.{test,spec}.?(c|m)[jt]s?(x)"],
+    include: ["src/tests/{unit,integration}/**/*.{test,spec}.?(c|m)[jt]s?(x)"],
     globals: true,
   },
 });

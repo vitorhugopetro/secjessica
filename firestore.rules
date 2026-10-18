@@ -51,6 +51,29 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
+    // Fila de Espera para Encaixes
+    match /appointment_waitlist/{waitlistId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Pesquisas NPS de Satisfação
+    match /nps_surveys/{surveyId} {
+      allow read, write: if isAuthenticated();
+      allow create: if true; // Respostas via webhook/público
+    }
+
+    // Formulários de Pré-Atendimento e Anamnese
+    match /pre_anamnese_forms/{formId} {
+      allow read, update, delete: if isAuthenticated();
+      allow create: if true; // Paciente preenche via link externo público
+    }
+
+    // Comprovantes Pix com OCR
+    match /pix_receipts/{receiptId} {
+      allow read, write: if isAuthenticated();
+      allow create: if true; // Webhooks podem criar comprovantes detectados
+    }
+
     match /audit_logs/{logId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();

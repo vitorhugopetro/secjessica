@@ -1,8 +1,7 @@
 "use server";
 
 import { requireOrganization, auditLog } from "@/server/lib/organizations";
-import { createServerClient } from "@/lib/supabase/server";
-import { revalidatePath } from "next/cache";
+import { firebaseClient } from "@/lib/firebase/client";
 
 export interface PreAnamneseData {
   id?: string;
@@ -28,38 +27,30 @@ export async function submitPreAnamnese(data: PreAnamneseData) {
     return { error: "Nome, telefone e ID do agendamento são obrigatórios." };
   }
 
-  const supabase = await createServerClient();
-
   // Busca a empresa dona do agendamento
-  const { data: app } = await supabase
-    .from("appointments")
-    .select("company_id")
-    .eq("id", data.appointment_id)
-    .maybeSingle();
-
+  const app = await firebaseClient.getDoc<any>("appointments", data.appointment_id);
   const companyId = app?.company_id || "default";
 
-  const { data: record, error } = await supabase
-    .from("pre_anamnese_forms")
-    .insert({
-      company_id: companyId,
-      appointment_id: data.appointment_id,
-      patient_name: data.patient_name,
-      phone: data.phone,
-      birth_date: data.birth_date || null,
-      cpf: data.cpf || null,
-      chief_complaint: data.chief_complaint || null,
-      allergies: data.allergies || null,
-      chronic_diseases: data.chronic_diseases || null,
-      current_medications: data.current_medications || null,
-      emergency_contact: data.emergency_contact || null,
-      status: "completed",
-    })
-    .select()
-    .single();
+  const formId = `anamnese_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+  const record: PreAnamneseData = {
+    id: formId,
+    company_id: companyId,
+    appointment_id: data.appointment_id,
+    patient_name: data.patient_name.trim(),
+    phone: data.phone.trim(),
+    birth_date: data.birth_date || undefined,
+    cpf: data.cpf || undefined,
+    chief_complaint: data.chief_complaint || undefined,
+    allergies: data.allergies || undefined,
+    chronic_diseases: data.chronic_diseases || undefined,
+    current_medications: data.current_medications || undefined,
+    emergency_contact: data.emergency_contact || undefined,
+    filled_at: new Date().toISOString(),
+  };
 
-  if (error) {
-    return { error: error.message };
+  const res = await firebaseClient.setDoc("pre_anamnese_forms", formId, record);
+  if (!res.success) {
+    return { error: res.error || "Erro ao salvar pré-anamnese no Firestore" };
   }
 
   return { success: true, data: record };
@@ -72,19 +63,12 @@ export async function getPreAnamneseByAppointment(orgId: string, appointmentId: 
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { data: null, error: auth.error };
 
-  const supabase = await createServerClient();
-  const { data, error } = await supabase
-    .from("pre_anamnese_forms")
-    .select("*")
-    .eq("company_id", orgId)
-    .eq("appointment_id", appointmentId)
-    .maybeSingle();
+  const forms = await firebaseClient.listDocs<PreAnamneseData>("pre_anamnese_forms");
+  const found = forms.find(
+    (f) => f.company_id === orgId && f.appointment_id === appointmentId
+  ) || null;
 
-  if (error && error.code !== "PGRST116") {
-    return { data: null, error: error.message };
-  }
-
-  return { data, error: null };
+  return { data: found, error: null };
 }
 
 /**
@@ -94,14 +78,9 @@ export async function listPreAnamneses(orgId: string) {
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { data: [], error: auth.error };
 
-  const supabase = await createServerClient();
-  const { data, error } = await supabase
-    .from("pre_anamnese_forms")
-    .select("*")
-    .eq("company_id", orgId)
-    .order("filled_at", { ascending: false })
-    .limit(50);
+  const forms = await firebaseClient.listDocs<PreAnamneseData>("pre_anamnese_forms");
+  const filtered = forms.filter((f) => f.company_id === orgId);
+  filtered.sort((a, b) => (b.filled_at || "").localeCompare(a.filled_at || ""));
 
-  if (error) return { data: [], error: error.message };
-  return { data: data || [], error: null };
+  return { data: filtered.slice(0, 50), error: null };
 }

@@ -105,12 +105,40 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${plusJakartaSans.variable} ${playfairDisplay.variable} h-full antialiased`}>
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="SecJessica" />
+        <meta name="theme-color" content="#6B3A4C" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="apple-touch-icon" href="/assets/logos/logo_principal.svg" />
+        <link rel="manifest" href="/manifest.json" />
       </head>
-      <body className="min-h-full flex flex-col font-sans">
+      <body className="min-h-full flex flex-col font-sans touch-manipulation">
         <AuthProvider>
           <ToastProvider>{children}</ToastProvider>
         </AuthProvider>
+        {typeof window !== "undefined" && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                if ('serviceWorker' in navigator) {
+                  window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js').then(
+                      (registration) => {
+                        console.log('SW registered: ', registration.scope);
+                      },
+                      (error) => {
+                        console.log('SW registration failed: ', error);
+                      }
+                    );
+                  });
+                }
+              `,
+            }}
+          />
+        )}
       </body>
     </html>
   );

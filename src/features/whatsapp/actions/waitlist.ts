@@ -1,7 +1,7 @@
 "use server";
 
 import { requireOrganization, auditLog } from "@/server/lib/organizations";
-import { createServerClient } from "@/lib/supabase/server";
+import { firebaseClient } from "@/lib/firebase/client";
 import { revalidatePath } from "next/cache";
 import { sendWhatsAppMessage, sanitizeWhatsAppPhone } from "./index";
 
@@ -43,25 +43,24 @@ export async function addToWaitlist(
     return { error: "Telefone inválido para a fila de espera" };
   }
 
-  const supabase = await createServerClient();
-  const { data: record, error } = await supabase
-    .from("appointment_waitlist")
-    .insert({
-      company_id: orgId,
-      client_id: data.clientId || null,
-      patient_name: data.patientName,
-      phone: cleanPhone,
-      preferred_shift: data.preferredShift || "any",
-      preferred_days: data.preferredDays || null,
-      priority: data.priority || 1,
-      notes: data.notes || null,
-      status: "waiting",
-    })
-    .select()
-    .single();
+  const entryId = `waitlist_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+  const record: WaitlistEntry = {
+    id: entryId,
+    company_id: orgId,
+    client_id: data.clientId || null,
+    patient_name: data.patientName,
+    phone: cleanPhone,
+    preferred_shift: data.preferredShift || "any",
+    preferred_days: data.preferredDays || undefined,
+    priority: data.priority || 1,
+    notes: data.notes || null,
+    status: "waiting",
+    created_at: new Date().toISOString(),
+  };
 
-  if (error) {
-    return { error: error.message };
+  const res = await firebaseClient.setDoc("appointment_waitlist", entryId, record);
+  if (!res.success) {
+    return { error: res.error || "Erro ao adicionar à fila de espera" };
   }
 
   await auditLog({
@@ -69,7 +68,7 @@ export async function addToWaitlist(
     userId: auth.user!.id,
     action: "whatsapp.waitlist_added",
     entity: "appointment_waitlist",
-    entityId: record?.id,
+    entityId: entryId,
     metadata: { patient: data.patientName, phone: cleanPhone },
   });
 
@@ -84,19 +83,15 @@ export async function listWaitlist(orgId: string): Promise<{ data: WaitlistEntry
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { data: [], error: auth.error };
 
-  const supabase = await createServerClient();
-  const { data, error } = await supabase
-    .from("appointment_waitlist")
-    .select("*")
-    .eq("company_id", orgId)
-    .order("priority", { ascending: false })
-    .order("created_at", { ascending: true });
+  const allEntries = await firebaseClient.listDocs<WaitlistEntry>("appointment_waitlist");
+  const filtered = allEntries.filter((e) => e.company_id === orgId);
+  // Sort: priority descending, then created_at ascending
+  filtered.sort((a, b) => {
+    if (b.priority !== a.priority) return b.priority - a.priority;
+    return (a.created_at || "").localeCompare(b.created_at || "");
+  });
 
-  if (error) {
-    return { data: [], error: error.message };
-  }
-
-  return { data: (data as WaitlistEntry[]) || [], error: null };
+  return { data: filtered, error: null };
 }
 
 /**
@@ -106,14 +101,13 @@ export async function deleteWaitlistEntry(orgId: string, id: string) {
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { error: auth.error };
 
-  const supabase = await createServerClient();
-  const { error } = await supabase
-    .from("appointment_waitlist")
-    .delete()
-    .eq("id", id)
-    .eq("company_id", orgId);
+  const existing = await firebaseClient.getDoc<WaitlistEntry>("appointment_waitlist", id);
+  if (!existing || existing.company_id !== orgId) {
+    return { error: "Entrada não encontrada na fila de espera desta organização" };
+  }
 
-  if (error) return { error: error.message };
+  const res = await firebaseClient.deleteDoc("appointment_waitlist", id);
+  if (!res.success) return { error: res.error || "Erro ao remover da fila de espera" };
 
   revalidatePath("/whatsapp");
   return { success: true };
@@ -134,15 +128,8 @@ export async function notifyWaitlistCandidate(
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { error: auth.error };
 
-  const supabase = await createServerClient();
-  const { data: candidate, error } = await supabase
-    .from("appointment_waitlist")
-    .select("*")
-    .eq("id", waitlistId)
-    .eq("company_id", orgId)
-    .single();
-
-  if (error || !candidate) {
+  const candidate = await firebaseClient.getDoc<WaitlistEntry>("appointment_waitlist", waitlistId);
+  if (!candidate || candidate.company_id !== orgId) {
     return { error: "Candidato não encontrado na fila de espera" };
   }
 
@@ -170,14 +157,12 @@ export async function notifyWaitlistCandidate(
   });
 
   if (sendRes.success) {
-    await supabase
-      .from("appointment_waitlist")
-      .update({
-        status: "notified",
-        notified_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", waitlistId);
+    await firebaseClient.setDoc("appointment_waitlist", waitlistId, {
+      ...candidate,
+      status: "notified",
+      notified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
   }
 
   revalidatePath("/whatsapp");

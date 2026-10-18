@@ -1,0 +1,22 @@
+{
+  "name": "SecJessica",
+  "short_name": "SecJessica",
+  "description": "Plataforma completa de secretariado remoto com WhatsApp inteligente, gestão de agenda médica e multi-tenant.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FBF0DB",
+  "theme_color": "#6B3A4C",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "pt-BR",
+  "categories": ["business", "productivity", "health"],
+  "icons": [
+    {
+      "src": "/assets/logos/logo_principal.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": []
+}

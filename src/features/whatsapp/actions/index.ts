@@ -1,12 +1,13 @@
 "use server";
 
 import { requireOrganization, auditLog } from "@/server/lib/organizations";
-import { createServerClient } from "@/lib/supabase/server";
+import { firebaseClient } from "@/lib/firebase/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 export interface WhatsAppConfigData {
   id?: string;
+  company_id?: string;
   provider: "evolution_api" | "z_api" | "meta_cloud" | "manual";
   instance_name: string;
   phone_number?: string | null;
@@ -64,19 +65,11 @@ export async function getWhatsAppConfig(orgId: string) {
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { data: null, error: auth.error };
 
-  const supabase = await createServerClient();
-  const { data, error } = await supabase
-    .from("whatsapp_instances")
-    .select("*")
-    .eq("company_id", orgId)
-    .maybeSingle();
-
-  if (error && error.code !== "PGRST116") {
-    return { data: null, error: error.message };
-  }
+  const allInstances = await firebaseClient.listDocs<WhatsAppConfigData>("whatsapp_instances");
+  const instance = allInstances.find((i) => i.company_id === orgId) || null;
 
   // Se não existir, retorna configuração padrão manual
-  if (!data) {
+  if (!instance) {
     const defaultConfig: WhatsAppConfigData = {
       provider: "evolution_api",
       instance_name: `secjessica-${orgId.slice(0, 8)}`,
@@ -93,13 +86,13 @@ export async function getWhatsAppConfig(orgId: string) {
     return { data: defaultConfig, error: null };
   }
 
-  return { data: data as WhatsAppConfigData, error: null };
+  return { data: instance, error: null };
 }
 
 /**
  * Salva ou atualiza a configuração do WhatsApp da empresa
  */
-export async function saveWhatsAppConfig(orgId: string, prevState: any, formData: FormData) {
+export async function saveWhatsAppConfig(orgId: string, prevState: unknown, formData: FormData) {
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { error: auth.error };
 
@@ -115,64 +108,46 @@ export async function saveWhatsAppConfig(orgId: string, prevState: any, formData
     return { error: parsed.error.flatten().fieldErrors };
   }
 
-  const supabase = await createServerClient();
   const cleanPhone = parsed.data.phone_number ? await sanitizeWhatsAppPhone(parsed.data.phone_number) : null;
 
-  const payload = {
+  // Check if instance already exists
+  const allInstances = await firebaseClient.listDocs<WhatsAppConfigData>("whatsapp_instances");
+  const existing = allInstances.find((i) => i.company_id === orgId);
+
+  const instanceId = existing?.id || `wainst_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+
+  const payload: WhatsAppConfigData = {
+    id: instanceId,
     company_id: orgId,
     provider: parsed.data.provider,
     instance_name: parsed.data.instance_name,
     phone_number: cleanPhone,
+    status: existing?.status || "disconnected",
     api_url: parsed.data.api_url || null,
     api_key: parsed.data.api_key || null,
     auto_reply: parsed.data.auto_reply,
     auto_confirm_appointments: parsed.data.auto_confirm_appointments,
     reminder_hours_before: parsed.data.reminder_hours_before,
     business_hours_only: parsed.data.business_hours_only,
-    updated_at: new Date().toISOString(),
+    qr_code_base64: existing?.qr_code_base64 || null,
+    last_connected_at: existing?.last_connected_at || null,
   };
 
-  const { data: existing } = await supabase
-    .from("whatsapp_instances")
-    .select("id")
-    .eq("company_id", orgId)
-    .maybeSingle();
-
-  let resData;
-  if (existing?.id) {
-    const { data, error } = await supabase
-      .from("whatsapp_instances")
-      .update(payload)
-      .eq("id", existing.id)
-      .select()
-      .single();
-    if (error) return { error: error.message };
-    resData = data;
-  } else {
-    const { data, error } = await supabase
-      .from("whatsapp_instances")
-      .insert({
-        ...payload,
-        status: "disconnected",
-      })
-      .select()
-      .single();
-    if (error) return { error: error.message };
-    resData = data;
-  }
+  const res = await firebaseClient.setDoc("whatsapp_instances", instanceId, payload);
+  if (!res.success) return { error: res.error || "Erro ao salvar configuração do WhatsApp" };
 
   await auditLog({
     orgId,
     userId: auth.user!.id,
     action: "whatsapp.config_updated",
     entity: "whatsapp_instances",
-    entityId: resData?.id,
+    entityId: instanceId,
     metadata: { provider: parsed.data.provider, instance: parsed.data.instance_name },
   });
 
   revalidatePath("/whatsapp");
   revalidatePath("/agenda");
-  return { data: resData, error: null };
+  return { data: payload, error: null };
 }
 
 /**
@@ -182,14 +157,10 @@ export async function connectWhatsAppInstance(orgId: string) {
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { error: auth.error };
 
-  const supabase = await createServerClient();
-  const { data: instance } = await supabase
-    .from("whatsapp_instances")
-    .select("*")
-    .eq("company_id", orgId)
-    .maybeSingle();
+  const allInstances = await firebaseClient.listDocs<WhatsAppConfigData>("whatsapp_instances");
+  const instance = allInstances.find((i) => i.company_id === orgId);
 
-  if (!instance) {
+  if (!instance || !instance.id) {
     return { error: "Configure a instância primeiro antes de conectar." };
   }
 
@@ -206,15 +177,13 @@ export async function connectWhatsAppInstance(orgId: string) {
       if (res.ok) {
         const json = await res.json();
         const qr = json.base64 || json.qrcode?.base64 || null;
-        await supabase
-          .from("whatsapp_instances")
-          .update({
-            status: qr ? "qrcode" : "connected",
-            qr_code_base64: qr,
-            last_connected_at: qr ? null : new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", instance.id);
+        await firebaseClient.setDoc("whatsapp_instances", instance.id, {
+          ...instance,
+          status: qr ? "qrcode" : "connected",
+          qr_code_base64: qr,
+          last_connected_at: qr ? null : new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
 
         revalidatePath("/whatsapp");
         return { success: true, qrCode: qr, status: qr ? "qrcode" : "connected" };
@@ -228,15 +197,13 @@ export async function connectWhatsAppInstance(orgId: string) {
   const mockQr =
     "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'><rect width='240' height='240' fill='%23ffffff'/><text x='50%25' y='45%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%23128C7E' font-weight='bold'>SecJessica WhatsApp</text><text x='50%25' y='60%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='11' fill='%23666'>Escaneie no seu WhatsApp</text></svg>";
 
-  await supabase
-    .from("whatsapp_instances")
-    .update({
-      status: "connected",
-      qr_code_base64: mockQr,
-      last_connected_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", instance.id);
+  await firebaseClient.setDoc("whatsapp_instances", instance.id, {
+    ...instance,
+    status: "connected",
+    qr_code_base64: mockQr,
+    last_connected_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  });
 
   revalidatePath("/whatsapp");
   return { success: true, status: "connected", qrCode: mockQr };
@@ -249,15 +216,17 @@ export async function disconnectWhatsAppInstance(orgId: string) {
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { error: auth.error };
 
-  const supabase = await createServerClient();
-  await supabase
-    .from("whatsapp_instances")
-    .update({
+  const allInstances = await firebaseClient.listDocs<WhatsAppConfigData>("whatsapp_instances");
+  const instance = allInstances.find((i) => i.company_id === orgId);
+
+  if (instance?.id) {
+    await firebaseClient.setDoc("whatsapp_instances", instance.id, {
+      ...instance,
       status: "disconnected",
       qr_code_base64: null,
       updated_at: new Date().toISOString(),
-    })
-    .eq("company_id", orgId);
+    });
+  }
 
   await auditLog({
     orgId,
@@ -292,14 +261,9 @@ export async function sendWhatsAppMessage(
     return { error: "Número de telefone inválido para WhatsApp" };
   }
 
-  const supabase = await createServerClient();
-
   // Verifica configuração de API
-  const { data: instance } = await supabase
-    .from("whatsapp_instances")
-    .select("*")
-    .eq("company_id", orgId)
-    .maybeSingle();
+  const allInstances = await firebaseClient.listDocs<WhatsAppConfigData>("whatsapp_instances");
+  const instance = allInstances.find((i) => i.company_id === orgId) || null;
 
   let messageStatus = "sent";
   let providerMessageId: string | null = null;
@@ -327,33 +291,33 @@ export async function sendWhatsAppMessage(
       } else {
         externalError = `Status ${res.status}: ${await res.text()}`;
       }
-    } catch (err: any) {
-      externalError = err?.message ?? "Falha ao conectar na API do WhatsApp";
+    } catch (err: unknown) {
+      externalError = err instanceof Error ? err.message : "Falha ao conectar na API do WhatsApp";
     }
   }
 
   // Registra no histórico de mensagens
-  const { data: record, error: insertError } = await supabase
-    .from("whatsapp_messages")
-    .insert({
-      company_id: orgId,
-      contact_id: params.contactId || null,
-      client_id: params.clientId || null,
-      appointment_id: params.appointmentId || null,
-      phone: cleanPhone,
-      direction: "outbound",
-      message: params.message,
-      status: messageStatus,
-      template_kind: params.templateKind || "custom",
-      provider_message_id: providerMessageId,
-      error_message: externalError,
-    })
-    .select()
-    .single();
+  const msgId = `wamsg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+  const record = {
+    id: msgId,
+    company_id: orgId,
+    contact_id: params.contactId || null,
+    client_id: params.clientId || null,
+    appointment_id: params.appointmentId || null,
+    phone: cleanPhone,
+    direction: "outbound",
+    message: params.message,
+    status: messageStatus,
+    template_kind: params.templateKind || "custom",
+    provider_message_id: providerMessageId,
+    error_message: externalError,
+    created_at: new Date().toISOString(),
+  };
 
-  if (insertError) {
-    // Fallback gracioso caso a tabela ainda esteja sendo provisionada
-    console.warn("Could not insert whatsapp_messages record", insertError);
+  const insertRes = await firebaseClient.setDoc("whatsapp_messages", msgId, record);
+  if (!insertRes.success) {
+    // Fallback gracioso caso a coleção ainda esteja sendo provisionada
+    console.warn("Could not insert whatsapp_messages record", insertRes.error);
   }
 
   // Gera link wa.me direto para uso imediato pelo atendente
@@ -383,33 +347,34 @@ export async function sendAppointmentWhatsAppNotification(
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { error: auth.error };
 
-  const supabase = await createServerClient();
-
-  // Busca dados do agendamento, cliente, contato e empresa
-  const { data: appointment, error: appError } = await supabase
-    .from("appointments")
-    .select("*, client:clients(name, phone), contact:contacts(name, phone, whatsapp), company:companies(name, phone, address)")
-    .eq("id", appointmentId)
-    .eq("company_id", orgId)
-    .single();
-
-  if (appError || !appointment) {
+  // Busca dados do agendamento
+  const appointment = await firebaseClient.getDoc<Record<string, unknown>>("appointments", appointmentId);
+  if (!appointment || appointment.company_id !== orgId) {
     return { error: "Agendamento não encontrado." };
   }
 
+  // Busca dados do cliente e contato vinculados
+  const client = appointment.client_id
+    ? await firebaseClient.getDoc<Record<string, unknown>>("clients", appointment.client_id as string)
+    : null;
+  const contact = appointment.contact_id
+    ? await firebaseClient.getDoc<Record<string, unknown>>("contacts", appointment.contact_id as string)
+    : null;
+  const company = await firebaseClient.getDoc<Record<string, unknown>>("companies", orgId);
+
   // Determina o telefone de destino
   const targetPhone =
-    appointment.contact?.whatsapp ||
-    appointment.contact?.phone ||
-    appointment.client?.phone;
+    (contact?.whatsapp as string) ||
+    (contact?.phone as string) ||
+    (client?.phone as string);
 
   if (!targetPhone) {
     return { error: "Nenhum telefone de WhatsApp encontrado para o cliente ou contato deste agendamento." };
   }
 
-  const clientName = appointment.client?.name || appointment.contact?.name || "Cliente";
-  const companyName = appointment.company?.name || "Nossa Clínica";
-  const startDate = new Date(appointment.starts_at);
+  const clientName = (client?.name as string) || (contact?.name as string) || "Cliente";
+  const companyName = (company?.name as string) || "Nossa Clínica";
+  const startDate = new Date(appointment.starts_at as string);
 
   const formattedDate = startDate.toLocaleDateString("pt-BR", {
     weekday: "long",
@@ -423,7 +388,7 @@ export async function sendAppointmentWhatsAppNotification(
   });
 
   // Modelos dinâmicos por tipo com Links de Mobilidade e Ficha de Pré-Atendimento
-  const locationText = appointment.location || appointment.company?.address;
+  const locationText = (appointment.location as string) || (company?.address as string);
   let mobilitySection = "";
   if (locationText) {
     const encoded = encodeURIComponent(locationText.trim());
@@ -442,16 +407,16 @@ export async function sendAppointmentWhatsAppNotification(
   } else if (kind === "cancellation") {
     message = `⚠️ *Cancelamento de Agendamento*\n\nOlá, *${clientName}*, confirmamos o cancelamento do agendamento *"${appointment.title}"* que estava previsto para ${formattedDate} às ${formattedTime}.\n\nPara agendar uma nova data e horário, basta nos enviar uma mensagem!`;
   } else if (kind === "pix") {
-    message = `💳 *Orientações de Pagamento / Chave Pix*\n\nOlá, *${clientName}*! Seguem os dados para pagamento ou garantia da sua reserva para o agendamento de ${formattedDate}:\n\n🔑 *Chave Pix:* ${appointment.company?.phone || "contato@secjessica.com.br"}\nBeneficiário: *${companyName}*\n\nApós a realização, por gentileza nos envie a foto ou comprovante por aqui para validação automática. Obrigado!`;
+    message = `💳 *Orientações de Pagamento / Chave Pix*\n\nOlá, *${clientName}*! Seguem os dados para pagamento ou garantia da sua reserva para o agendamento de ${formattedDate}:\n\n🔑 *Chave Pix:* ${(company?.phone as string) || "contato@secjessica.com.br"}\nBeneficiário: *${companyName}*\n\nApós a realização, por gentileza nos envie a foto ou comprovante por aqui para validação automática. Obrigado!`;
   }
 
   // Envia a mensagem
   const sendRes = await sendWhatsAppMessage(orgId, {
     to: targetPhone,
     message,
-    contactId: appointment.contact_id,
-    clientId: appointment.client_id,
-    appointmentId: appointment.id,
+    contactId: (appointment.contact_id as string) || null,
+    clientId: (appointment.client_id as string) || null,
+    appointmentId: appointment.id as string,
     templateKind: kind,
   });
 
@@ -470,19 +435,11 @@ export async function listWhatsAppMessages(orgId: string, limit = 50) {
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { data: [], error: auth.error };
 
-  const supabase = await createServerClient();
-  const { data, error } = await supabase
-    .from("whatsapp_messages")
-    .select("*, contact:contacts(name), client:clients(name)")
-    .eq("company_id", orgId)
-    .order("created_at", { ascending: false })
-    .limit(limit);
+  const allMessages = await firebaseClient.listDocs<Record<string, unknown>>("whatsapp_messages");
+  const filtered = allMessages.filter((m) => m.company_id === orgId);
+  filtered.sort((a, b) => ((b.created_at as string) || "").localeCompare((a.created_at as string) || ""));
 
-  if (error) {
-    return { data: [], error: error.message };
-  }
-
-  return { data: data ?? [], error: null };
+  return { data: filtered.slice(0, limit), error: null };
 }
 
 /**
@@ -492,19 +449,12 @@ export async function listQuickReplies(orgId: string) {
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { data: [], error: auth.error };
 
-  const supabase = await createServerClient();
-  const { data, error } = await supabase
-    .from("whatsapp_quick_replies")
-    .select("*")
-    .eq("company_id", orgId)
-    .order("shortcut", { ascending: true });
-
-  if (error) {
-    return { data: [], error: error.message };
-  }
+  const allReplies = await firebaseClient.listDocs<Record<string, unknown>>("whatsapp_quick_replies");
+  const filtered = allReplies.filter((r) => r.company_id === orgId);
+  filtered.sort((a, b) => ((a.shortcut as string) || "").localeCompare((b.shortcut as string) || ""));
 
   // Se vazio, cria as respostas padrão da secretária remota
-  if (!data || data.length === 0) {
+  if (filtered.length === 0) {
     const defaultReplies = [
       {
         company_id: orgId,
@@ -543,17 +493,20 @@ export async function listQuickReplies(orgId: string) {
       },
     ];
 
-    await supabase.from("whatsapp_quick_replies").insert(defaultReplies);
+    for (const reply of defaultReplies) {
+      const replyId = `qr_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+      await firebaseClient.setDoc("whatsapp_quick_replies", replyId, { id: replyId, ...reply });
+    }
     return { data: defaultReplies, error: null };
   }
 
-  return { data: data ?? [], error: null };
+  return { data: filtered, error: null };
 }
 
 /**
  * Cria nova resposta rápida
  */
-export async function createQuickReply(orgId: string, prevState: any, formData: FormData) {
+export async function createQuickReply(orgId: string, prevState: unknown, formData: FormData) {
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { error: auth.error };
 
@@ -570,23 +523,22 @@ export async function createQuickReply(orgId: string, prevState: any, formData: 
     shortcut = `/${shortcut.trim().toLowerCase()}`;
   }
 
-  const supabase = await createServerClient();
-  const { data, error } = await supabase
-    .from("whatsapp_quick_replies")
-    .insert({
-      company_id: orgId,
-      title,
-      shortcut,
-      content,
-      category,
-    })
-    .select()
-    .single();
+  const replyId = `qr_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+  const reply = {
+    id: replyId,
+    company_id: orgId,
+    title,
+    shortcut,
+    content,
+    category,
+    created_at: new Date().toISOString(),
+  };
 
-  if (error) return { error: error.message };
+  const res = await firebaseClient.setDoc("whatsapp_quick_replies", replyId, reply);
+  if (!res.success) return { error: res.error || "Erro ao criar resposta rápida" };
 
   revalidatePath("/whatsapp");
-  return { data, error: null };
+  return { data: reply, error: null };
 }
 
 /**
@@ -596,13 +548,13 @@ export async function deleteQuickReply(orgId: string, replyId: string) {
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { error: auth.error };
 
-  const supabase = await createServerClient();
-  const { error } = await supabase
-    .from("whatsapp_quick_replies")
-    .delete()
-    .eq("id", replyId)
-    .eq("company_id", orgId);
+  const existing = await firebaseClient.getDoc<Record<string, unknown>>("whatsapp_quick_replies", replyId);
+  if (!existing || existing.company_id !== orgId) {
+    return { error: "Resposta rápida não encontrada nesta organização" };
+  }
+
+  const res = await firebaseClient.deleteDoc("whatsapp_quick_replies", replyId);
 
   revalidatePath("/whatsapp");
-  return { error: error?.message ?? null };
+  return { error: res.success ? null : (res.error || "Erro ao excluir resposta rápida") };
 }

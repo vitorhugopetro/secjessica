@@ -3,24 +3,24 @@
 import { useAuth } from "@/contexts/auth-context";
 import { BrandLogo } from "@/components/brand-logo";
 import { Bell, Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
+import { MobileMenuToggle } from "@/components/layout/sidebar";
 
-export function Topbar() {
+interface TopbarProps {
+  onOpenMobileDrawer: () => void;
+}
+
+export function Topbar({ onOpenMobileDrawer }: TopbarProps) {
   const { user, signOut } = useAuth();
 
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="flex items-center justify-between px-6 py-3">
+      <div className="flex items-center justify-between px-4 py-3 sm:px-6">
         <div className="flex items-center gap-4">
+          <MobileMenuToggle onClick={onOpenMobileDrawer} />
           <BrandLogo size="sm" showText={false} href="/dashboard" />
           <span className="font-playfair font-semibold text-secjessica-900 tracking-tight hidden sm:block">Jéssica Secretaria Remota</span>
-          <button className="md:hidden p-2 text-muted-foreground hover:text-secjessica-900">
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
         </div>
 
         <div className="flex items-center gap-3">

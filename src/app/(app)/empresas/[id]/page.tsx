@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { createServerClient } from "@/lib/supabase/server";
-import { notFound } from "next/navigation";
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
   return { title: "Empresa - Sec Jessica" };

@@ -12,9 +12,17 @@ console.log("Preparando diretório de distribuição estática para o Firebase H
 
 // 1. Limpa ou cria out/
 if (fs.existsSync(outDir)) {
-  fs.rmSync(outDir, { recursive: true, force: true });
+  for (const item of fs.readdirSync(outDir)) {
+    const itemPath = path.join(outDir, item);
+    try {
+      fs.rmSync(itemPath, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+    } catch (err) {
+      console.warn(`Aviso ao limpar ${item}:`, err.message);
+    }
+  }
+} else {
+  fs.mkdirSync(outDir, { recursive: true });
 }
-fs.mkdirSync(outDir, { recursive: true });
 
 // Helper para copiar recursivo
 function copyFolderSync(from, to) {

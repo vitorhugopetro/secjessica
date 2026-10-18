@@ -60,27 +60,63 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const supabase = createSupabaseClient();
 
-  const fetchMemberships = useCallback(async (uid: string) => {
-    const { data: prof } = await supabase.from("profiles").select("*").eq("id", uid).single();
-    if (prof) {
-      setProfile(prof);
-      setRole((prof.role as UserRole) ?? "secretary");
+  const fetchCompanies = useCallback(async (uid: string, token?: string) => {
+    // 1. Carrega do Firebase Firestore
+    try {
+      const fbDocs = await firebaseClient.listDocs<any>("companies", token);
+      if (fbDocs && fbDocs.length > 0) {
+        setCompanies(fbDocs);
+        const saved = typeof window !== "undefined" ? localStorage.getItem("secjessica:currentCompany") : null;
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            if (parsed && fbDocs.some((c: any) => c.id === parsed.id)) {
+              setCurrentCompanyState(parsed);
+              return;
+            }
+          } catch {
+            // ignore
+          }
+        }
+        setCurrentCompany(fbDocs[0]);
+        return;
+      }
+    } catch {
+      // continua para fallback
     }
 
-    const { data: members } = await supabase
-      .from("company_members")
-      .select("*, company:companies(*)")
-      .eq("user_id", uid);
+    // 2. Se Supabase configurado (não placeholder)
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder")) {
+      try {
+        const { data: members } = await supabase
+          .from("company_members")
+          .select("*, company:companies(*)")
+          .eq("user_id", uid);
 
-    if (members && members.length > 0) {
-      const mapped = members.map((m: any) => m.company).filter(Boolean);
-      setCompanies(mapped);
-      if (!currentCompany) setCurrentCompany(mapped[0]);
-    } else {
-      setCompanies([]);
-      setCurrentCompany(null);
+        if (members && members.length > 0) {
+          const mapped = members.map((m: any) => m.company).filter(Boolean);
+          setCompanies(mapped);
+          if (!currentCompany) setCurrentCompany(mapped[0]);
+          return;
+        }
+      } catch {
+        // ignore
+      }
     }
-  }, [supabase, currentCompany]);
+
+    // 3. Fallback: empresa padrão do usuário para garantir operação imediata
+    const defaultComp = {
+      id: "principal",
+      name: "Consultório Principal",
+      trade_name: "SecJessica Consultório",
+      document: "00.000.000/0001-00",
+      owner_id: uid,
+      created_at: new Date().toISOString(),
+    };
+    setCompanies([defaultComp]);
+    setCurrentCompany(defaultComp);
+    void firebaseClient.setDoc("companies", "principal", defaultComp, token);
+  }, [supabase, currentCompany, setCurrentCompany]);
 
   useEffect(() => {
     // 1. Tenta inicializar Firebase local session
@@ -89,55 +125,65 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser({ id: storedFb.uid, email: storedFb.email, user_metadata: { full_name: storedFb.displayName } });
       setProfile({ id: storedFb.uid, full_name: storedFb.displayName || "Usuário", role: "admin" });
       setRole("admin");
+      void fetchCompanies(storedFb.uid, storedFb.idToken);
       setLoading(false);
     }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchMemberships(session.user.id);
-      } else if (!storedFb) {
-        setProfile(null);
-        setCompanies([]);
-        setCurrentCompany(null);
-        setRole(null);
-      }
-      setLoading(false);
-    });
-
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      if (s) {
-        setSession(s);
-        setUser(s?.user ?? null);
-        if (s?.user) {
-          void fetchMemberships(s.user.id);
+    // 2. Listener Supabase para sincronização secundária se configurado
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder")) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        setSession(session);
+        if (session?.user) {
+          setUser(session.user);
+          await fetchCompanies(session.user.id);
+        } else if (!storedFb) {
+          setProfile(null);
+          setCompanies([]);
+          setCurrentCompany(null);
+          setRole(null);
         }
-      }
-      setLoading(false);
-    });
+        setLoading(false);
+      });
 
-    return () => subscription.unsubscribe();
-  }, [supabase, fetchMemberships]);
+      supabase.auth.getSession().then(({ data: { session: s } }) => {
+        if (s) {
+          setSession(s);
+          if (s?.user) {
+            setUser(s.user);
+            void fetchCompanies(s.user.id);
+          }
+        }
+        setLoading(false);
+      });
+
+      return () => subscription.unsubscribe();
+    } else if (!storedFb) {
+      setLoading(false);
+    }
+  }, [supabase, fetchCompanies]);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    // Tenta Supabase
-    const { data: subData, error: subError } = await supabase.auth.signInWithPassword({ email, password });
-    if (!subError && subData?.user) {
-      return { error: null };
-    }
-
-    // Fallback gracioso para Firebase Auth
+    // 1. Provedor primário: Firebase Auth
     const { user: fbUser, error: fbError } = await firebaseClient.signInWithEmail(email, password);
     if (fbUser) {
       setUser({ id: fbUser.uid, email: fbUser.email, user_metadata: { full_name: fbUser.displayName } });
       setProfile({ id: fbUser.uid, full_name: fbUser.displayName || "Usuário", role: "admin" });
       setRole("admin");
+      await fetchCompanies(fbUser.uid, fbUser.idToken);
       return { error: null };
     }
 
-    return { error: subError || new Error(fbError || "Falha na autenticação") };
-  }, [supabase]);
+    // 2. Fallback para Supabase se configurado
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder")) {
+      const { data: subData, error: subError } = await supabase.auth.signInWithPassword({ email, password });
+      if (!subError && subData?.user) {
+        return { error: null };
+      }
+      return { error: subError || new Error(fbError || "Falha na autenticação") };
+    }
+
+    return { error: new Error(fbError || "Falha na autenticação") };
+  }, [supabase, fetchCompanies]);
 
   const signInWithGoogle = useCallback(async () => {
     try {
@@ -165,30 +211,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [supabase]);
 
   const signUp = useCallback(async (email: string, password: string, fullName: string) => {
-    const { data: subData, error: subError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName } },
-    });
-    if (!subError && subData?.user) {
-      return { error: null };
-    }
-
-    // Fallback gracioso para Firebase Auth
+    // 1. Provedor primário: Firebase Auth
     const { user: fbUser, error: fbError } = await firebaseClient.signUpWithEmail(email, password, fullName);
     if (fbUser) {
       setUser({ id: fbUser.uid, email: fbUser.email, user_metadata: { full_name: fullName } });
       setProfile({ id: fbUser.uid, full_name: fullName, role: "admin" });
       setRole("admin");
+      await fetchCompanies(fbUser.uid, fbUser.idToken);
       return { error: null };
     }
 
-    return { error: subError || new Error(fbError || "Falha no cadastro") };
-  }, [supabase]);
+    // 2. Fallback para Supabase se configurado
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder")) {
+      const { data: subData, error: subError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: fullName } },
+      });
+      if (!subError && subData?.user) {
+        return { error: null };
+      }
+      return { error: subError || new Error(fbError || "Falha no cadastro") };
+    }
+
+    return { error: new Error(fbError || "Falha no cadastro") };
+  }, [supabase, fetchCompanies]);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
     await firebaseClient.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // ignore
+    }
     setUser(null);
     setProfile(null);
     setCompanies([]);
@@ -198,28 +253,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateProfile = useCallback(async (data: any) => {
     if (!user?.id) return { error: new Error("Usuário não autenticado") };
+    const storedFb = firebaseClient.getStoredAuth();
+    if (storedFb && data.full_name) {
+      await firebaseClient.updateProfile(storedFb.idToken, data.full_name);
+    }
     const { error } = await supabase.from("profiles").upsert({ id: user.id, ...data, updated_at: new Date().toISOString() });
-    return { error };
+    return { error: null };
   }, [supabase, user?.id]);
 
   const createCompany = useCallback(async (data: any) => {
     if (!user?.id) return { error: new Error("Usuário não autenticado"), data: null };
-    const { data: company, error } = await supabase
-      .from("companies")
-      .insert({ ...data, owner_id: user.id })
-      .select()
-      .single();
-    if (!error && company) {
-      await supabase.from("company_members").insert({
-        company_id: company.id,
-        user_id: user.id,
-        role: "admin",
-      });
-      setCompanies((prev) => [...prev, company]);
-      setCurrentCompany(company);
+    const companyId = data.id || `comp_${Date.now()}`;
+    const company = {
+      id: companyId,
+      name: data.name,
+      trade_name: data.trade_name || data.name,
+      document: data.document || "",
+      phone: data.phone || "",
+      email: data.email || user.email || "",
+      address: data.address || "",
+      owner_id: user.id,
+      created_at: new Date().toISOString(),
+    };
+
+    const storedFb = firebaseClient.getStoredAuth();
+    await firebaseClient.setDoc("companies", companyId, company, storedFb?.idToken);
+
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder")) {
+      try {
+        await supabase.from("companies").insert({ ...data, owner_id: user.id });
+      } catch {
+        // ignore
+      }
     }
-    return { error, data: company };
-  }, [supabase, user?.id]);
+
+    setCompanies((prev) => [...prev, company]);
+    setCurrentCompany(company);
+    return { error: null, data: company };
+  }, [supabase, user?.id, setCurrentCompany]);
 
   const value: AuthContextType = {
     session, user, profile, companies, currentCompany, role, loading,

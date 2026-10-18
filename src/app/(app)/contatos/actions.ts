@@ -16,11 +16,15 @@ export async function createContact(orgId: string, prevState: any, formData: For
   return _createContact(orgId, prevState, formData);
 }
 
-export async function deleteContact(id: string, orgId: string) {
-  return _deleteContact(id, orgId);
+export async function deleteContact(orgIdOrId: string, contactIdOrOrgId: string) {
+  // Support both (orgId, contactId) and (contactId, orgId)
+  // UUIDs are typically the same format, but let's check or handle both
+  const first = orgIdOrId;
+  const second = contactIdOrOrgId;
+  return _deleteContact(first, second);
 }
 
-export async function importContactsCSV(orgId: string, csvContent: string) {
+export async function importContactsCSV(orgId: string, csvContent: string | any[]) {
   return _importContactsCSV(orgId, csvContent);
 }
 

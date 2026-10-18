@@ -277,4 +277,41 @@ export const firebaseClient = {
       return [];
     }
   },
+
+  /**
+   * Remove documento do Firestore
+   */
+  async deleteDoc(collection: string, docId: string, token?: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const headers: Record<string, string> = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const url = `${firebaseConfig.firestoreBaseUrl}/${collection}/${docId}?key=${firebaseConfig.apiKey}`;
+      const res = await fetch(url, { method: "DELETE", headers });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        return { success: false, error: err.error?.message || "Erro ao excluir documento" };
+      }
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
+  },
+
+  /**
+   * Consulta documentos de uma coleção com filtro opcional por campo
+   */
+  async queryDocs<T = Record<string, any>>(
+    collection: string,
+    filter?: { field: string; value: string },
+    token?: string
+  ): Promise<T[]> {
+    try {
+      const all = await this.listDocs<T>(collection, token);
+      if (!filter) return all;
+      return all.filter((item: any) => item[filter.field] === filter.value);
+    } catch {
+      return [];
+    }
+  },
 };

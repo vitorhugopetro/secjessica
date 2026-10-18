@@ -2,25 +2,7 @@ import Link from "next/link";
 import { Mail, Phone, Calendar, ShieldCheck, MessageSquare, ArrowRight } from "lucide-react";
 import { InspirationalBanner } from "@/components/inspirational-banner";
 
-function BrandLogo() {
-  return (
-    <div className="flex items-center gap-2">
-      <img
-        src="/assets/logos/logo_principal.svg"
-        alt="Jéssica Secretaria Remota"
-        className="h-10 w-auto"
-      />
-      <div className="flex flex-col">
-        <span className="font-playfair font-bold text-secjessica-900 tracking-tight text-xl leading-none">
-          SecJessica
-        </span>
-        <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">
-          Secretariado Remoto
-        </span>
-      </div>
-    </div>
-  );
-}
+import { BrandLogo } from "@/components/brand-logo";
 
 export default function Home() {
   const jsonLd = {

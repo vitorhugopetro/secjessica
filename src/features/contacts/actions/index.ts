@@ -105,9 +105,36 @@ export async function deleteContact(orgId: string, contactId: string) {
   return { error: error?.message ?? null };
 }
 
-export async function importContactsCSV(orgId: string, rows: any[]) {
+export async function importContactsCSV(orgId: string, input: any[] | string) {
   const auth = await requireOrganization(orgId);
   if (!auth.authorized) return { error: auth.error };
+
+  let rows: any[] = [];
+  if (typeof input === "string") {
+    const lines = input.split(/\r?\n/).filter((l) => l.trim().length > 0);
+    if (lines.length > 1) {
+      const headerLine = lines[0];
+      const delimiter = headerLine.includes(";") ? ";" : ",";
+      const headers = headerLine.split(delimiter).map((h) => h.replace(/^["']|["']$/g, "").trim().toLowerCase());
+      
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(delimiter).map((v) => v.replace(/^["']|["']$/g, "").trim());
+        const row: Record<string, string> = {};
+        headers.forEach((h, idx) => {
+          if (h.includes("nome") || h === "name") row.name = values[idx] || "";
+          else if (h.includes("mail") || h === "email") row.email = values[idx] || "";
+          else if (h.includes("whats") || h === "whatsapp") row.whatsapp = values[idx] || "";
+          else if (h.includes("tel") || h.includes("fone") || h === "phone") row.phone = values[idx] || "";
+          else if (h.includes("empresa") || h.includes("company")) row.company_name = values[idx] || "";
+          else if (h.includes("cargo") || h.includes("fun") || h === "role") row.role = values[idx] || "";
+          else if (h.includes("obs") || h.includes("notes")) row.notes = values[idx] || "";
+        });
+        if (row.name) rows.push(row);
+      }
+    }
+  } else if (Array.isArray(input)) {
+    rows = input;
+  }
 
   const supabase = await createServerClient();
   const inserted: any[] = [];

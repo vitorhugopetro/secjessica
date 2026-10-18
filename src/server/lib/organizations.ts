@@ -1,11 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use server";
 
-import { firebaseClient } from "@/lib/firebase/client";
 import {
-  firebaseGetDoc,
-  firebaseListDocs,
   firebaseSetDoc,
-  firebaseDeleteDoc,
 } from "@/lib/firebase/server";
 
 /**

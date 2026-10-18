@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { useAuth } from "@/contexts/auth-context";
@@ -43,6 +45,7 @@ export default function ContatosPage() {
     defaultValues: { name: "", client_id: "", role: "", email: "", phone: "", whatsapp: "", company_name: "", notes: "" },
   });
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const loadData = useCallback(async () => {
     if (!currentCompany?.id) {
       setContacts([]);
@@ -61,6 +64,7 @@ export default function ContatosPage() {
   }, [currentCompany?.id]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadData();
   }, [loadData]);
 

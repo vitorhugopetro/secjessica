@@ -155,26 +155,18 @@ export const DEVOTIONAL_MESSAGES: DevotionalMessage[] = [
 ];
 
 export function InspirationalBanner({ className = "" }: { className?: string }) {
-  const [current, setCurrent] = useState<DevotionalMessage>(DEVOTIONAL_MESSAGES[0]);
-  const [copied, setCopied] = useState(false);
-  const [greeting, setGreeting] = useState("Olá, Jéssica!");
-  const [isRotating, setIsRotating] = useState(false);
-
-  // Define a saudação conforme o horário e sorteia um versículo na montagem do componente (cada atualização de página)
-  useEffect(() => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) {
-      setGreeting("Bom dia, Jéssica! ☀️");
-    } else if (hour >= 12 && hour < 18) {
-      setGreeting("Boa tarde, Jéssica! 🌤️");
-    } else {
-      setGreeting("Boa noite, Jéssica! ✨");
-    }
-
-    // Sorteia aleatoriamente um versículo a cada refresh/abertura da página
+  const hour = new Date().getHours();
+  const [current, setCurrent] = useState<DevotionalMessage>(() => {
     const randomIndex = Math.floor(Math.random() * DEVOTIONAL_MESSAGES.length);
-    setCurrent(DEVOTIONAL_MESSAGES[randomIndex]);
-  }, []);
+    return DEVOTIONAL_MESSAGES[randomIndex];
+  });
+  const [copied, setCopied] = useState(false);
+  const [greeting, setGreeting] = useState(() => {
+    if (hour >= 5 && hour < 12) return "Bom dia, Jéssica! ☀️";
+    if (hour >= 12 && hour < 18) return "Boa tarde, Jéssica! 🌤️";
+    return "Boa noite, Jéssica! ✨";
+  });
+  const [isRotating, setIsRotating] = useState(false);
 
   // Permite à usuária sortear outro versículo com 1 clique
   function handleNextVerse() {

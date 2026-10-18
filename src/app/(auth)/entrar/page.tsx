@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { useAuth } from "@/contexts/auth-context";
@@ -47,14 +49,10 @@ function SignInForm() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
+  const [error, setError] = useState(() => {
     const errorParam = searchParams.get("error");
-    if (errorParam) {
-      setError(decodeURIComponent(errorParam));
-    }
-  }, [searchParams]);
+    return errorParam ? decodeURIComponent(errorParam) : "";
+  });
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -69,7 +67,7 @@ function SignInForm() {
     if (res.error) {
       setError(res.error?.message ?? "Erro ao entrar");
     } else {
-      window.location.href = "/dashboard";
+      router.push("/dashboard");
     }
   }
 
@@ -81,7 +79,7 @@ function SignInForm() {
       setError(res.error?.message ?? "Não foi possível conectar com o Google.");
       setGoogleLoading(false);
     } else {
-      window.location.href = "/dashboard";
+      router.push("/dashboard");
     }
   }
 

@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/contexts/auth-context";
 import { BrandLogo } from "@/components/brand-logo";
-import { Bell, Settings } from "lucide-react";
+import { Bell } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { MobileMenuToggle } from "@/components/layout/sidebar";
@@ -12,7 +12,7 @@ interface TopbarProps {
 }
 
 export function Topbar({ onOpenMobileDrawer }: TopbarProps) {
-  const { user, signOut } = useAuth();
+  const { signOut } = useAuth();
 
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/80">

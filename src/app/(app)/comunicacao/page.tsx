@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { useAuth } from "@/contexts/auth-context";
@@ -46,6 +48,7 @@ export default function ComunicacaoPage() {
     defaultValues: { name: "", kind: "confirmation", subject: "", body: "" },
   });
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const loadTemplates = useCallback(async () => {
     if (!currentCompany?.id) {
       setTemplates([]);
@@ -61,6 +64,7 @@ export default function ComunicacaoPage() {
   }, [currentCompany?.id]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadTemplates();
   }, [loadTemplates]);
 

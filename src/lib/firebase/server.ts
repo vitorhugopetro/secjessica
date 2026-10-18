@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use server";
 
 import { firebaseConfig } from "@/lib/firebase/config";

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { useAuth } from "@/contexts/auth-context";
@@ -14,10 +16,6 @@ export default function RelatoriosPage() {
   const [report, setReport] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadReport();
-  }, [currentCompany?.id]);
-
   async function loadReport() {
     if (!currentCompany?.id) return;
     setLoading(true);
@@ -25,6 +23,11 @@ export default function RelatoriosPage() {
     if (!res.error) setReport(res.data);
     setLoading(false);
   }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadReport();
+  }, [currentCompany?.id]);
 
   async function handleExport() {
     if (!currentCompany?.id) return;

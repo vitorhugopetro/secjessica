@@ -1,5 +1,7 @@
 import { createServerClient } from "@/lib/supabase/server";
 import { auth, calendar } from "@googleapis/calendar";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {

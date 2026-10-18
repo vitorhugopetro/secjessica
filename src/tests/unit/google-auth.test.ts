@@ -1,4 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { describe, it, expect } from "vitest";
 
 describe("Google OAuth Sign-In & Colaboradores", () => {
   it("deve configurar os parâmetros corretos para redirecionamento Google OAuth", () => {

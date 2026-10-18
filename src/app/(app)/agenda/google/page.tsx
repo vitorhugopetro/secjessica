@@ -1,29 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, CheckCircle2, AlertCircle, Link as LinkIcon } from "lucide-react";
+import { Mail, CheckCircle2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function GoogleCalendarPage() {
   const { currentCompany } = useAuth();
   const { toast } = useToast();
-  const [connected, setConnected] = useState(false);
-  const [error, setError] = useState("");
+  const router = useRouter();
+  const shown = React.useRef(false);
+
+  const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const connected = params.get("connected") === "1";
+  const error = params.get("error") || "";
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("connected") === "1") {
-      setConnected(true);
-      toast({ title: "Google Agenda conectado", description: "Sua agenda foi sincronizada com sucesso." });
+    if ((connected || error) && !shown.current) {
+      shown.current = true;
       window.history.replaceState({}, document.title, window.location.pathname);
+      if (connected) {
+        toast({ title: "Google Agenda conectado", description: "Sua agenda foi sincronizada com sucesso." });
+      }
     }
-    if (params.get("error")) {
-      setError("Erro ao conectar com o Google Agenda. Tente novamente.");
-    }
-  }, [toast]);
+  }, [connected, error, toast]);
 
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
   const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI;
@@ -75,11 +78,11 @@ export default function GoogleCalendarPage() {
               <p className="text-sm text-muted-foreground">
                 Ao conectar, você poderá criar compromissos no SecJessica e eles aparecerão automaticamente no Google Agenda (e vice-versa).
               </p>
-              <Button
-                onClick={() => {
-                  const url = `/api/google-calendar/auth?company_id=${currentCompany?.id ?? "default"}`;
-                  window.location.href = url;
-                }}
+                <Button
+                  onClick={() => {
+                    const url = `/api/google-calendar/auth?company_id=${currentCompany?.id ?? "default"}`;
+                    router.push(url);
+                  }}
                 className="w-full flex items-center justify-center gap-2 bg-secjessica-600 hover:bg-secjessica-500"
               >
                 <Mail className="h-4 w-4" /> Conectar conta do Google

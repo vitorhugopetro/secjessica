@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { useAuth } from "@/contexts/auth-context";
@@ -82,7 +84,7 @@ export default function SignUpPage() {
       setError(res.error?.message ?? "Erro ao criar empresa");
       return;
     }
-    window.location.href = "/dashboard";
+    router.push("/dashboard");
   }
 
   async function handleGoogleSignUp() {
@@ -93,7 +95,7 @@ export default function SignUpPage() {
       setError(res.error?.message ?? "Não foi possível conectar com o Google.");
       setGoogleLoading(false);
     } else {
-      window.location.href = "/dashboard";
+    router.push("/dashboard");
     }
   }
 

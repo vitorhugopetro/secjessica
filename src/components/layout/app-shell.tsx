@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { Sidebar, MobileMenuToggle } from "@/components/layout/sidebar";
+import { Sidebar } from "@/components/layout/sidebar";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { Topbar } from "@/components/layout/topbar";
 

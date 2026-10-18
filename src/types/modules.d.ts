@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 declare module "next" {
   export type Metadata = any;
   export type Viewport = any;

@@ -25,7 +25,7 @@ export function buildEvolutionButtonsPayload(payload: InteractivePayload) {
     title: payload.title || "Sec Jessica",
     description: payload.body,
     footerText: payload.footer || "Sec Jessica - Secretariado Remoto",
-    buttons: payload.buttons.map((btn, idx) => ({
+    buttons: payload.buttons.map((btn) => ({
       buttonId: btn.id,
       buttonText: { displayText: btn.text },
       type: 1,

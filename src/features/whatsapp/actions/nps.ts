@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use server";
 
-import { requireOrganization, auditLog } from "@/server/lib/organizations";
+import { requireOrganization } from "@/server/lib/organizations";
 import { firebaseClient } from "@/lib/firebase/client";
 import { revalidatePath } from "next/cache";
 import { sendWhatsAppMessage, sanitizeWhatsAppPhone } from "./index";

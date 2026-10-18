@@ -7,16 +7,13 @@ import {
   MessageSquare,
   Calendar,
   Building2,
-  Users,
   ShieldCheck,
   Search,
   ChevronDown,
   ChevronUp,
-  ExternalLink,
   Sparkles,
   PhoneCall,
   Mail,
-  CheckCircle2,
   FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";

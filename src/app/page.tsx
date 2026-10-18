@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Mail, Phone, Calendar, ShieldCheck, MessageSquare, ArrowRight } from "lucide-react";
+import { Mail, Calendar, ShieldCheck, MessageSquare, ArrowRight } from "lucide-react";
 import { InspirationalBanner } from "@/components/inspirational-banner";
 
 import { BrandLogo } from "@/components/brand-logo";

@@ -88,7 +88,6 @@ export const Toast = React.forwardRef<
 >((props, ref) => {
   const {
     className,
-    duration = 5000,
     title,
     description,
     action,

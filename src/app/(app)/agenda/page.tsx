@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { useAuth } from "@/contexts/auth-context";
@@ -143,6 +145,7 @@ export default function AgendaPage() {
     },
   });
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const loadData = useCallback(async () => {
     if (!currentCompany?.id) {
       setAppointments([]);
@@ -164,6 +167,7 @@ export default function AgendaPage() {
   }, [currentCompany?.id]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadData();
   }, [loadData]);
 

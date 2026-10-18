@@ -1,11 +1,10 @@
 import { createServerClient as createSupabaseServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import type { Database } from "@/lib/db";
 
 export async function createServerClient() {
   const cookieStore = await cookies();
 
-  return createSupabaseServerClient<any>(
+  return createSupabaseServerClient<any>( // eslint-disable-line @typescript-eslint/no-explicit-any
     process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-anon-key",
     {

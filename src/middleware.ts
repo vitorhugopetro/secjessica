@@ -1,5 +1,4 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { firebaseClient } from "@/lib/firebase/client";
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next({

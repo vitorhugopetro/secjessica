@@ -93,6 +93,9 @@ export default function SignUpPage() {
     if (res.error) {
       setError(res.error?.message ?? "Não foi possível conectar com o Google.");
       setGoogleLoading(false);
+    } else {
+      router.push("/dashboard");
+      router.refresh();
     }
   }
 

@@ -186,29 +186,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [supabase, fetchCompanies]);
 
   const signInWithGoogle = useCallback(async () => {
-    try {
-      const origin = typeof window !== "undefined" ? window.location.origin : "https://secjessica.web.app";
-      const redirectTo = `${origin}/auth/callback`;
-
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo,
-          queryParams: {
-            access_type: "offline",
-            prompt: "select_account",
-          },
-        },
-      });
-
-      if (error) {
-        return { error };
-      }
+    // 1. Provedor primário: Firebase Auth nativo
+    const { user: fbUser, error: fbError } = await firebaseClient.signInWithGoogle();
+    if (fbUser) {
+      setUser({ id: fbUser.uid, email: fbUser.email, user_metadata: { full_name: fbUser.displayName } });
+      setProfile({ id: fbUser.uid, full_name: fbUser.displayName || "Usuário", role: "admin" });
+      setRole("admin");
+      await fetchCompanies(fbUser.uid, fbUser.idToken);
       return { error: null };
-    } catch (err: any) {
-      return { error: err };
     }
-  }, [supabase]);
+
+    // 2. Fallback para Supabase apenas se URL real configurada
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder")) {
+      try {
+        const origin = typeof window !== "undefined" ? window.location.origin : "https://secjessica.web.app";
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: `${origin}/auth/callback`,
+            queryParams: { access_type: "offline", prompt: "select_account" },
+          },
+        });
+        if (!error) return { error: null };
+      } catch {
+        // ignore
+      }
+    }
+
+    return { error: new Error(fbError || "Falha ao autenticar com o Google") };
+  }, [supabase, fetchCompanies]);
 
   const signUp = useCallback(async (email: string, password: string, fullName: string) => {
     // 1. Provedor primário: Firebase Auth

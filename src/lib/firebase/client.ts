@@ -49,6 +49,90 @@ export const firebaseClient = {
   },
 
   /**
+   * Inicializa o SDK Web oficial do Firebase Auth dinamicamente
+   */
+  async loadFirebaseSDK(): Promise<any> {
+    if (typeof window === "undefined") return null;
+    if ((window as any).firebase?.auth) {
+      return (window as any).firebase;
+    }
+
+    return new Promise((resolve, reject) => {
+      // Carrega firebase-app-compat
+      const scriptApp = document.createElement("script");
+      scriptApp.src = "https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js";
+      scriptApp.onload = () => {
+        // Carrega firebase-auth-compat
+        const scriptAuth = document.createElement("script");
+        scriptAuth.src = "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js";
+        scriptAuth.onload = () => {
+          const fb = (window as any).firebase;
+          if (fb && !fb.apps?.length) {
+            fb.initializeApp({
+              apiKey: firebaseConfig.apiKey,
+              authDomain: firebaseConfig.authDomain,
+              projectId: firebaseConfig.projectId,
+              storageBucket: firebaseConfig.storageBucket,
+              messagingSenderId: firebaseConfig.messagingSenderId,
+              appId: firebaseConfig.appId,
+            });
+          }
+          resolve(fb);
+        };
+        scriptAuth.onerror = () => reject(new Error("Falha ao carregar Firebase Auth"));
+        document.head.appendChild(scriptAuth);
+      };
+      scriptApp.onerror = () => reject(new Error("Falha ao carregar Firebase App"));
+      document.head.appendChild(scriptApp);
+    });
+  },
+
+  /**
+   * Login ou Cadastro com Conta Google nativa do Firebase Auth
+   */
+  async signInWithGoogle(): Promise<{ user: FirebaseUser | null; error: string | null }> {
+    try {
+      const fb = await this.loadFirebaseSDK();
+      if (!fb || !fb.auth) {
+        return { user: null, error: "Não foi possível carregar os serviços do Firebase" };
+      }
+
+      const auth = fb.auth();
+      const provider = new fb.auth.GoogleAuthProvider();
+      provider.addScope("email");
+      provider.addScope("profile");
+      provider.setCustomParameters({ prompt: "select_account" });
+
+      const result = await auth.signInWithPopup(provider);
+      const u = result.user;
+      const idToken = await u.getIdToken();
+
+      const user: FirebaseUser = {
+        uid: u.uid,
+        email: u.email || "",
+        displayName: u.displayName || u.email?.split("@")[0] || "Usuário Google",
+        idToken,
+        refreshToken: u.refreshToken || "",
+        expiresIn: "3600",
+      };
+
+      this.saveAuth(user);
+      return { user, error: null };
+    } catch (err: any) {
+      if (err.code === "auth/popup-closed-by-user" || err.code === "auth/cancelled-popup-request") {
+        return { user: null, error: "A janela de login com o Google foi fechada." };
+      }
+      if (err.code === "auth/configuration-not-found" || err.message?.includes("CONFIGURATION_NOT_FOUND")) {
+        return {
+          user: null,
+          error: "O provedor Google precisa ser ativado no Firebase Console (Authentication > Sign-in method > Google).",
+        };
+      }
+      return { user: null, error: err.message || "Erro ao conectar com Google" };
+    }
+  },
+
+  /**
    * Login com E-mail e Senha
    */
   async signInWithEmail(email: string, password: string): Promise<{ user: FirebaseUser | null; error: string | null }> {

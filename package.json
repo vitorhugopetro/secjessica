@@ -2,6 +2,7 @@
   "name": "secjessica",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build && node scripts/prepare-export.js",
@@ -9,7 +10,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "changelog": "node scripts/update-changelog.js"
   },
   "dependencies": {
     "@googleapis/calendar": "^20.1.0",

@@ -15,6 +15,7 @@ interface AuthContextType {
   role: UserRole | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signInWithGoogle: () => Promise<{ error: any }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   updateProfile: (data: any) => Promise<{ error: any }>;
@@ -138,6 +139,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: subError || new Error(fbError || "Falha na autenticação") };
   }, [supabase]);
 
+  const signInWithGoogle = useCallback(async () => {
+    try {
+      const origin = typeof window !== "undefined" ? window.location.origin : "https://secjessica.web.app";
+      const redirectTo = `${origin}/auth/callback`;
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+          queryParams: {
+            access_type: "offline",
+            prompt: "select_account",
+          },
+        },
+      });
+
+      if (error) {
+        return { error };
+      }
+      return { error: null };
+    } catch (err: any) {
+      return { error: err };
+    }
+  }, [supabase]);
+
   const signUp = useCallback(async (email: string, password: string, fullName: string) => {
     const { data: subData, error: subError } = await supabase.auth.signUp({
       email,
@@ -197,7 +223,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value: AuthContextType = {
     session, user, profile, companies, currentCompany, role, loading,
-    signIn, signUp, signOut, updateProfile, setCurrentCompany, createCompany,
+    signIn, signInWithGoogle, signUp, signOut, updateProfile, setCurrentCompany, createCompany,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

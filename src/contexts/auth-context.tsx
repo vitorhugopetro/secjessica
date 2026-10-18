@@ -186,7 +186,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [supabase, fetchCompanies]);
 
   const signInWithGoogle = useCallback(async () => {
-    // 1. Provedor primário: Firebase Auth nativo
+    // Provedor oficial: Firebase Auth nativo (Google OAuth Popup)
     const { user: fbUser, error: fbError } = await firebaseClient.signInWithGoogle();
     if (fbUser) {
       setUser({ id: fbUser.uid, email: fbUser.email, user_metadata: { full_name: fbUser.displayName } });
@@ -196,25 +196,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: null };
     }
 
-    // 2. Fallback para Supabase apenas se URL real configurada
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL && !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder")) {
-      try {
-        const origin = typeof window !== "undefined" ? window.location.origin : "https://secjessica.web.app";
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: {
-            redirectTo: `${origin}/auth/callback`,
-            queryParams: { access_type: "offline", prompt: "select_account" },
-          },
-        });
-        if (!error) return { error: null };
-      } catch {
-        // ignore
-      }
-    }
-
     return { error: new Error(fbError || "Falha ao autenticar com o Google") };
-  }, [supabase, fetchCompanies]);
+  }, [fetchCompanies]);
 
   const signUp = useCallback(async (email: string, password: string, fullName: string) => {
     // 1. Provedor primário: Firebase Auth

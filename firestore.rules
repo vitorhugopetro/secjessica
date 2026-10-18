@@ -1,0 +1,64 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Funções auxiliares de autenticação e autorização
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Regras de Usuários
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    // Regras de Empresas (Multi-Tenant)
+    match /companies/{companyId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Coleções vinculadas à empresa (Clientes, Contatos, Agendamentos, Tarefas, WhatsApp, etc)
+    match /clients/{clientId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /contacts/{contactId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /appointments/{appointmentId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /tasks/{taskId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /whatsapp_instances/{instanceId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /whatsapp_messages/{messageId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /whatsapp_quick_replies/{replyId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /audit_logs/{logId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if false; // Logs são imutáveis
+    }
+
+    match /notifications/{notificationId} {
+      allow read, write: if isAuthenticated();
+    }
+  }
+}

@@ -7,9 +7,11 @@ node_modules/
 
 # Build
 .next/
+.next_build/
 out/
 build/
 dist/
+.firebase/
 
 # Variáveis de ambiente (NÃO commitar arquivos .env reais)
 .env

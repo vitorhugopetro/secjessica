@@ -23,8 +23,40 @@ function BrandLogo() {
 }
 
 export default function Home() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "Sec Jessica",
+        "operatingSystem": "Web, iOS, Android, Windows, macOS",
+        "applicationCategory": "BusinessApplication",
+        "description": "Plataforma completa de secretariado remoto com WhatsApp inteligente, gestão de agenda médica e multi-tenant.",
+        "url": "https://secjessica.web.app",
+        "author": {
+          "@type": "Person",
+          "name": "Vitor Hugo Abreu de Sousa",
+          "email": "vitorhugo1@gmail.com"
+        }
+      },
+      {
+        "@type": "ProfessionalService",
+        "name": "Sec Jessica - Secretariado Remoto & Gestão de Clínicas",
+        "description": "Serviços especializados de secretária remota, triagem de pacientes, confirmação de agendamentos e recepção virtual.",
+        "telephone": "+55-24-98821-2712",
+        "email": "vitorhugo1@gmail.com",
+        "areaServed": "BR",
+        "url": "https://secjessica.web.app"
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-secjessica-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Navbar Superior */}
       <nav className="border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -34,10 +66,16 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-3">
               <Link
+                href="/ajuda"
+                className="text-sm font-medium text-muted-foreground hover:text-secjessica-600 transition-colors hidden sm:inline-block"
+              >
+                Central de Ajuda
+              </Link>
+              <Link
                 href="/entrar"
                 className="text-sm font-medium text-muted-foreground hover:text-secjessica-600 transition-colors"
               >
-                Entrar no Sistema
+                Entrar
               </Link>
               <Link
                 href="/cadastro"

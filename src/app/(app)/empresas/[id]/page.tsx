@@ -3,7 +3,11 @@ import { createServerClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
-  return { title: "Empresa - SecJessica" };
+  return { title: "Empresa - Sec Jessica" };
+}
+
+export function generateStaticParams() {
+  return [{ id: "principal" }];
 }
 
 export default function EmpresaDetalhePage({ params }: { params: { id: string } }) {

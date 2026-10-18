@@ -2,6 +2,7 @@
 
 import React, { createContext, useCallback, useEffect, useState, type ReactNode } from "react";
 import { createSupabaseClient } from "@/lib/supabase/client";
+import { firebaseClient } from "@/lib/firebase/client";
 
 export type UserRole = "admin" | "secretary";
 
@@ -81,12 +82,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [supabase, currentCompany]);
 
   useEffect(() => {
+    // 1. Tenta inicializar Firebase local session
+    const storedFb = firebaseClient.getStoredAuth();
+    if (storedFb) {
+      setUser({ id: storedFb.uid, email: storedFb.email, user_metadata: { full_name: storedFb.displayName } });
+      setProfile({ id: storedFb.uid, full_name: storedFb.displayName || "Usuário", role: "admin" });
+      setRole("admin");
+      setLoading(false);
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
         await fetchMemberships(session.user.id);
-      } else {
+      } else if (!storedFb) {
         setProfile(null);
         setCompanies([]);
         setCurrentCompany(null);
@@ -96,10 +106,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s);
-      setUser(s?.user ?? null);
-      if (s?.user) {
-        void fetchMemberships(s.user.id);
+      if (s) {
+        setSession(s);
+        setUser(s?.user ?? null);
+        if (s?.user) {
+          void fetchMemberships(s.user.id);
+        }
       }
       setLoading(false);
     });
@@ -108,17 +120,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [supabase, fetchMemberships]);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error };
+    // Tenta Supabase
+    const { data: subData, error: subError } = await supabase.auth.signInWithPassword({ email, password });
+    if (!subError && subData?.user) {
+      return { error: null };
+    }
+
+    // Fallback gracioso para Firebase Auth
+    const { user: fbUser, error: fbError } = await firebaseClient.signInWithEmail(email, password);
+    if (fbUser) {
+      setUser({ id: fbUser.uid, email: fbUser.email, user_metadata: { full_name: fbUser.displayName } });
+      setProfile({ id: fbUser.uid, full_name: fbUser.displayName || "Usuário", role: "admin" });
+      setRole("admin");
+      return { error: null };
+    }
+
+    return { error: subError || new Error(fbError || "Falha na autenticação") };
   }, [supabase]);
 
   const signUp = useCallback(async (email: string, password: string, fullName: string) => {
-    const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName } } });
-    return { error };
+    const { data: subData, error: subError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: fullName } },
+    });
+    if (!subError && subData?.user) {
+      return { error: null };
+    }
+
+    // Fallback gracioso para Firebase Auth
+    const { user: fbUser, error: fbError } = await firebaseClient.signUpWithEmail(email, password, fullName);
+    if (fbUser) {
+      setUser({ id: fbUser.uid, email: fbUser.email, user_metadata: { full_name: fullName } });
+      setProfile({ id: fbUser.uid, full_name: fullName, role: "admin" });
+      setRole("admin");
+      return { error: null };
+    }
+
+    return { error: subError || new Error(fbError || "Falha no cadastro") };
   }, [supabase]);
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
+    await firebaseClient.signOut();
+    setUser(null);
+    setProfile(null);
+    setCompanies([]);
+    setCurrentCompany(null);
+    setRole(null);
   }, [supabase]);
 
   const updateProfile = useCallback(async (data: any) => {

@@ -1,0 +1,18 @@
+{
+  "projects": {
+    "default": "jessicasec"
+  },
+  "targets": {
+    "jessicasec": {
+      "hosting": {
+        "secjessica": [
+          "secjessica"
+        ],
+        "jessicasec": [
+          "jessicasec"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

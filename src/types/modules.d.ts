@@ -1,6 +1,11 @@
 declare module "next" {
   export type Metadata = any;
+  export type Viewport = any;
   export type NextConfig = any;
+  export namespace MetadataRoute {
+    export type Sitemap = any[];
+    export type Robots = any;
+  }
   const next: any;
   export default next;
 }

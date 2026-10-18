@@ -17,6 +17,7 @@ import {
   Bell,
   CheckCircle2,
   MessageSquare,
+  HelpCircle,
 } from "lucide-react";
 
 const navItems = [
@@ -32,6 +33,7 @@ const navItems = [
   { href: "/comunicacao", label: "Comunicação", icon: MailIcon },
   { href: "/relatorios", label: "Relatórios", icon: FileText },
   { href: "/notificacoes", label: "Notificações", icon: Bell },
+  { href: "/ajuda", label: "Central de Ajuda", icon: HelpCircle },
   { href: "/usuarios", label: "Usuários", icon: Users },
   { href: "/configuracoes", label: "Configurações", icon: Settings },
 ];

@@ -4,7 +4,7 @@
 
 ## 📊 Visão Geral
 - **Versão atual:** 1.3.0 (Mobile)
-- **Último commit:** edf2d5f — feat: adicionar script de setup para deploy Firebase automático
+- **Último commit:** 7bacf21 — chore: atualizar CHANGELOG e PROJECT_STATE após correções
 - **Branch ativa:** main
 - **URL Produção:** https://secjessica.web.app | https://jessicasec.web.app
 - **Projeto Firebase:** jessicasec
@@ -27,6 +27,8 @@
 ## 📁 Arquivos Alterados Recentemente (versão 1.3.0)
 | Arquivo | Mudança |
 |---------|---------|
+| CHANGELOG.md | chore: atualizar CHANGELOG e PROJECT_STATE após correções (7bacf21) |
+| PROJECT_STATE.md | chore: atualizar CHANGELOG e PROJECT_STATE após correções (7bacf21) |
 | scripts/setup-firebase-deploy.cjs | feat: adicionar script de setup para deploy Firebase automático (edf2d5f) |
 | src/contexts/auth-context.tsx | fix: corrigir login com Google (Firebase) (3872dfa) |
 | src/lib/firebase/client.ts | fix: corrigir login com Google (Firebase) (3872dfa) |
@@ -89,8 +91,6 @@
 | package.json | chore: remove redundant update-changelog.js script (02a7700) |
 | scripts/update-changelog.js | chore: remove redundant update-changelog.js script (02a7700) |
 | .github/workflows/update-changelog.yml | feat: add auto-updating project state system (CHANGELOG + PROJECT_STATE) with local and GitHub Action support (e26207b) |
-| CHANGELOG.md | feat: add auto-updating project state system (CHANGELOG + PROJECT_STATE) with local and GitHub Action support (e26207b) |
-| PROJECT_STATE.md | feat: add auto-updating project state system (CHANGELOG + PROJECT_STATE) with local and GitHub Action support (e26207b) |
 | scripts/update-state.js | feat: add auto-updating project state system (CHANGELOG + PROJECT_STATE) with local and GitHub Action support (e26207b) |
 | next-env.d.ts | chore: add auto-updating changelog system with script and GitHub Action (c1ac6cf) |
 | eslint.config.mjs | feat(mobile): add responsive mobile layout, PWA, bottom nav, drawer sidebar, and sidebar E2E tests (67e5031) |

@@ -50,3 +50,6 @@ Thumbs.db
 .pnpm-store/
 .kilo/
 *.tsbuildinfo
+
+# Firebase service account keys (NUNCA commitar)
+*firebase-adminsdk*.json

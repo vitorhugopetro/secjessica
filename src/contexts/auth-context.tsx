@@ -4,16 +4,9 @@
 
 import React, { createContext, useCallback, useEffect, useState, type ReactNode } from "react";
 import { createSupabaseClient } from "@/lib/supabase/client";
-import { firebaseClient } from "@/lib/firebase/client";
+import { firebaseClient, type FirebaseUser } from "@/lib/firebase/client";
 
 export type UserRole = "admin" | "secretary";
-
-export interface FirebaseUser {
-  uid: string;
-  email: string;
-  displayName?: string;
-  idToken: string;
-}
 
 export interface Company {
   id: string;
@@ -102,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const hasSupabase = process.env.NEXT_PUBLIC_SUPABASE_URL && !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder");
-  const [loading, setLoading] = useState(() => !storedFb && hasSupabase);
+  const [loading, setLoading] = useState(() => Boolean(!storedFb && hasSupabase));
 
   const setCurrentCompany = useCallback((company: Company | null) => {
     try {
@@ -217,8 +210,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!isMounted) return;
       setSession(session);
       if (session?.user) {
-        setUser({ id: session.user.id, email: session.user.email, user_metadata: { full_name: session.user.user_metadata?.full_name } } as unknown as FirebaseUser);
-        void fetchCompanies(session.user.id);
+        setUser({ id: session.user.uid, email: session.user.email, user_metadata: { full_name: session.user.user_metadata?.full_name } } as unknown as FirebaseUser);
+        void fetchCompanies(session.user.uid);
       } else if (!storedFb) {
         setProfile(null);
         setCompanies([]);
@@ -303,10 +296,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!subError && subData?.user) {
         return { error: null };
       }
-      return { error: subError || new Error(fbError?.message || "Falha no cadastro") };
+      return { error: subError || new Error(fbError || "Falha no cadastro") };
     }
 
-    return { error: new Error(fbError?.message || "Falha no cadastro") };
+    return { error: new Error(fbError || "Falha no cadastro") };
   }, [supabase, fetchCompanies]);
 
   const signOut = useCallback(async () => {
@@ -325,32 +318,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const updateProfile = useCallback(async (data: { full_name?: string; [key: string]: unknown }) => {
-    if (!user?.id) return { error: new Error("Usuário não autenticado") };
+    if (!user?.uid) return { error: new Error("Usuário não autenticado") };
     const storedFbAuth = firebaseClient.getStoredAuth();
     if (storedFbAuth && data.full_name) {
       await firebaseClient.updateProfile(storedFbAuth.idToken, data.full_name);
     }
 
     try {
-      await firebaseClient.setDoc("profiles", user.id, { id: user.id, ...data } as Record<string, unknown>, storedFbAuth?.idToken);
+      await firebaseClient.setDoc("profiles", user.uid, { id: user.uid, ...data } as Record<string, unknown>, storedFbAuth?.idToken);
     } catch {
       // ignore
     }
 
-    setProfile((prev: Profile | null) => (prev ? { ...prev, ...data } : { id: user.id, full_name: data.full_name || "Usuário", role: "admin", ...data }));
+    setProfile((prev: Profile | null) => (prev ? { ...prev, ...data } : { id: user.uid, full_name: data.full_name || "Usuário", role: "admin", ...data }));
 
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder")) {
       try {
-        await supabase.from("profiles").upsert({ id: user.id, ...data, updated_at: new Date().toISOString() });
+        await supabase.from("profiles").upsert({ id: user.uid, ...data, updated_at: new Date().toISOString() });
       } catch {
         // ignore
       }
     }
     return { error: null };
-  }, [supabase, user?.id]);
+  }, [supabase, user?.uid]);
 
   const createCompany = useCallback(async (data: { name: string; trade_name?: string; document?: string; phone?: string; email?: string; address?: string; id?: string }) => {
-    if (!user?.id) return { error: new Error("Usuário não autenticado"), data: null };
+    if (!user?.uid) return { error: new Error("Usuário não autenticado"), data: null };
     const companyId = data.id || `comp_${Date.now()}`;
     const company: Company = {
       id: companyId,
@@ -360,16 +353,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       phone: data.phone || "",
       email: data.email || user.email || "",
       address: data.address || "",
-      owner_id: user.id,
+      owner_id: user.uid,
       created_at: new Date().toISOString(),
     };
 
     const storedFbAuth = firebaseClient.getStoredAuth();
-    await firebaseClient.setDoc("companies", companyId, company as Record<string, unknown>, storedFbAuth?.idToken);
+    await firebaseClient.setDoc("companies", companyId, company as unknown as Record<string, unknown>, storedFbAuth?.idToken);
 
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder")) {
       try {
-        await supabase.from("companies").insert({ ...data, owner_id: user.id });
+        await supabase.from("companies").insert({ ...data, owner_id: user.uid });
       } catch {
         // ignore
       }
@@ -378,7 +371,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setCompanies((prev) => [...prev, company]);
     setCurrentCompany(company);
     return { error: null, data: company };
-  }, [supabase, user?.id, setCurrentCompany]);
+  }, [supabase, user?.uid, setCurrentCompany]);
 
   const value: AuthContextType = {
     session, user, profile, companies, currentCompany, role, loading,

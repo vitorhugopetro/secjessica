@@ -72,6 +72,34 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - chore: add auto-updating changelog system with script and GitHub Action (c1ac6cf) — Vitor Hugo Abreu de Sousa (2026-10-18)
 - chore: record official publication address and enhance multi-tenant fallback (9076ac1) — Vitor Hugo Abreu de Sousa (2026-10-17)
 
+### Adicionado
+- feat: adicionar script de setup para deploy Firebase automático (edf2d5f) — Vitor Hugo Abreu de Sousa (2026-10-18)
+- feat: add auto-updating project state system (CHANGELOG + PROJECT_STATE) with local and GitHub Action support (e26207b) — Vitor Hugo Abreu de Sousa (2026-10-18)
+- feat(mobile): add responsive mobile layout, PWA, bottom nav, drawer sidebar, and sidebar E2E tests (67e5031) — Vitor Hugo Abreu de Sousa (2026-10-18)
+- feat(firebase): migrate server actions and middleware from Supabase to Firebase, fix firestore rules and update build config (ac31107) — Vitor Hugo Abreu de Sousa (2026-10-18)
+- fix(branding): normalize SVG logos with PNG fallback; feat(firebase): elevate Firebase Auth and Firestore as primary backend; fix(contacts): normalize import and delete signatures (b210830) — Vitor Hugo Abreu de Sousa (2026-10-17)
+- feat(auth): enable Google sign-in and sign-up for Jessica and collaborators (9049dbc) — Vitor Hugo Abreu de Sousa (2026-10-17)
+- feat(whatsapp): implement 10 advanced integrations, tests and multi-tenant security rules (415075a) — Vitor Hugo Abreu de Sousa (2026-10-17)
+- feat: complete Sec Jessica deployment to secjessica.web.app, Firebase backend & hosting, SEO audit, and Help Center (d39d997) — Vitor Hugo Abreu de Sousa (2026-10-17)
+- feat: complete SecJessica remote secretary platform with WhatsApp hub, devotional banner, and multi-tenant isolation (360e9cc) — Vitor Hugo Abreu de Sousa (2026-10-17)
+
+### Corrigido
+- fix: corrigir login com Google (Firebase) (3872dfa) — Vitor Hugo Abreu de Sousa (2026-10-18)
+- fix(auth/perf): decouple Supabase profile call, fix SVG font imports, replace router.refresh with location href for static export, and update firestore rules (c8e11d2) — Vitor Hugo Abreu de Sousa (2026-10-18)
+- fix(csp): add gstatic.com to connect-src for sourcemaps and assets (2c99b46) — Vitor Hugo Abreu de Sousa (2026-10-18)
+- fix(auth): eliminate Supabase OAuth fallback and allow web.app in CSP frame-src (290fd75) — Vitor Hugo Abreu de Sousa (2026-10-17)
+- fix(build): protect outDir cleanup against Windows folder lock (0dce384) — Vitor Hugo Abreu de Sousa (2026-10-17)
+- fix(auth): implement native Firebase Google OAuth popup and update CSP headers (fda9388) — Vitor Hugo Abreu de Sousa (2026-10-17)
+- fix(hosting): add Cache-Control no-cache to HTML and immutable to static chunks in firebase.json (9462d6b) — Vitor Hugo Abreu de Sousa (2026-10-17)
+
+### Deploy
+- chore: corrigir lint, TS e preparar deploy automático Firebase (8f6dcce) — Vitor Hugo Abreu de Sousa (2026-10-18)
+
+### Outras
+- chore: remove redundant update-changelog.js script (02a7700) — Vitor Hugo Abreu de Sousa (2026-10-18)
+- chore: add auto-updating changelog system with script and GitHub Action (c1ac6cf) — Vitor Hugo Abreu de Sousa (2026-10-18)
+- chore: record official publication address and enhance multi-tenant fallback (9076ac1) — Vitor Hugo Abreu de Sousa (2026-10-17)
+
 ## [1.2.0] - 2026-10-17
 ### Adicionado
 - **Central de Ajuda Interna (`/ajuda`):** Base de conhecimento com artigos e FAQ interativo por categorias (WhatsApp, Agenda, Empresas, Atalhos e LGPD).

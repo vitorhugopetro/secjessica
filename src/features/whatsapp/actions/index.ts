@@ -379,12 +379,14 @@ export async function sendAppointmentWhatsAppNotification(
   const startDate = new Date(appointment.starts_at as string);
 
   const formattedDate = startDate.toLocaleDateString("pt-BR", {
+    timeZone: "America/Sao_Paulo",
     weekday: "long",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
   });
   const formattedTime = startDate.toLocaleTimeString("pt-BR", {
+    timeZone: "America/Sao_Paulo",
     hour: "2-digit",
     minute: "2-digit",
   });

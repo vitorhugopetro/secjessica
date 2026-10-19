@@ -40,8 +40,17 @@ export async function createAppointment(orgId: string, prevState: any, formData:
   const parsed = appointmentSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.flatten().fieldErrors };
 
-  const starts = new Date(parsed.data.starts_at).toISOString();
-  const ends = new Date(parsed.data.ends_at).toISOString();
+  const toISO = (s: string) => {
+    const d = new Date(s);
+    if (isNaN(d.getTime())) return s;
+    // Se a string não traz fuso, interpreta como horário de Brasília (UTC-3)
+    if (/[Zz]|[+-]\d{2}:?\d{2}$/.test(s.trim())) return d.toISOString();
+    const spOffsetMs = -3 * 60 * 60 * 1000;
+    return new Date(d.getTime() + spOffsetMs).toISOString();
+  };
+
+  const starts = toISO(parsed.data.starts_at);
+  const ends = toISO(parsed.data.ends_at);
   if (ends <= starts) return { error: "O término deve ser após o início" };
 
   const supabase = null; // Usando Firebase

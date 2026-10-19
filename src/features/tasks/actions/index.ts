@@ -38,6 +38,15 @@ export async function createTask(orgId: string, prevState: any, formData: FormDa
   const parsed = taskSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.flatten().fieldErrors };
 
+  const toISO = (s: string | undefined) => {
+    if (!s) return null;
+    const d = new Date(s);
+    if (isNaN(d.getTime())) return null;
+    if (/[Zz]|[+-]\d{2}:?\d{2}$/.test(s.trim())) return d.toISOString();
+    const spOffsetMs = -3 * 60 * 60 * 1000;
+    return new Date(d.getTime() + spOffsetMs).toISOString();
+  };
+
   const taskId = `task_${Date.now()}`;
   const task = {
     id: taskId,
@@ -47,7 +56,7 @@ export async function createTask(orgId: string, prevState: any, formData: FormDa
     category: parsed.data.category || null,
     priority: parsed.data.priority,
     status: parsed.data.status,
-    due_at: parsed.data.due_at ? new Date(parsed.data.due_at).toISOString() : null,
+    due_at: parsed.data.due_at ? toISO(parsed.data.due_at) : null,
     contact_id: parsed.data.contact_id || null,
     appointment_id: parsed.data.appointment_id || null,
     assigned_to: parsed.data.assigned_to || null,

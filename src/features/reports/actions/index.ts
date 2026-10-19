@@ -31,7 +31,7 @@ export async function listReports(orgId: string) {
         totalContacts: contacts.length,
         totalTasks: tasks.length,
         completedTasks: tasks.filter((t) => t.status === "done").length,
-        overdueTasks: tasks.filter((t) => t.status === "todo" && t.due_at && new Date(t.due_at) < new Date()).length,
+        overdueTasks: tasks.filter((t) => t.status === "todo" && t.due_at && new Date(t.due_at + "T00:00:00-03:00") < new Date()).length,
       },
     },
     error: null,

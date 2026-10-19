@@ -28,16 +28,23 @@ export function isWithinBusinessHours(
     return { isWithin: true };
   }
 
-  // Obter fuso de Brasília (UTC-3)
-  const spTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
-  const dayOfWeek = spTime.getDay(); // 0 = Dom, 1 = Seg, 6 = Sab
-  const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek; // 1 = Seg, 7 = Dom
+  // Obter hora e minuto em Brasília sem criar Date interpretado no fuso local do servidor
+  const spTimeParts = now.toLocaleString("en-US", {
+    timeZone: "America/Sao_Paulo",
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+  }).split(/[: ]/);
+  const spHour = Number(spTimeParts[spTimeParts.length - 2]);
+  const spMinute = Number(spTimeParts[spTimeParts.length - 1]);
+  const dayOfWeekSP = new Date(now.toLocaleDateString("en-US", { timeZone: "America/Sao_Paulo" })).getDay(); // 0 = Dom, 1 = Seg, 6 = Sab
+  const adjustedDay = dayOfWeekSP === 0 ? 7 : dayOfWeekSP; // 1 = Seg, 7 = Dom
 
   if (!merged.workDays.includes(adjustedDay)) {
     return { isWithin: false, reason: "weekend_or_non_workday" };
   }
 
-  const currentMinutes = spTime.getHours() * 60 + spTime.getMinutes();
+  const currentMinutes = spHour * 60 + spMinute;
 
   const [startH, startM] = (merged.startTime || "08:00").split(":").map(Number);
   const startMinutes = startH * 60 + (startM || 0);

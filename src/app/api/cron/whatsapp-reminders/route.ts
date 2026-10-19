@@ -24,15 +24,19 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createServerClient();
 
-    // Calcula a janela do dia seguinte (D-1): das 00:00 às 23:59 do dia de amanhã
+    // Calcula a janela do dia seguinte (D-1) no fuso de Brasília (UTC-3)
     const now = new Date();
-    const tomorrowStart = new Date(now);
-    tomorrowStart.setDate(tomorrowStart.getDate() + 1);
-    tomorrowStart.setHours(0, 0, 0, 0);
+    const spOffset = -3 * 60; // minutos de offset para America/Sao_Paulo (UTC-3)
+    const spLocalMs = now.getTime() + spOffset * 60 * 1000;
+    const spDate = new Date(spLocalMs);
 
-    const tomorrowEnd = new Date(now);
+    const tomorrowStart = new Date(spDate);
+    tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+    tomorrowStart.setUTCHours(0, 0, 0, 0);
+
+    const tomorrowEnd = new Date(spDate);
     tomorrowEnd.setDate(tomorrowEnd.getDate() + 1);
-    tomorrowEnd.setHours(23, 59, 59, 999);
+    tomorrowEnd.setUTCHours(23, 59, 59, 999);
 
     // Busca agendamentos do dia seguinte que não estejam cancelados
     const { data: appointments, error } = await supabase

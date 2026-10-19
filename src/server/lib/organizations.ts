@@ -104,7 +104,8 @@ export async function auditLog({
       user_agent: userAgent ?? null,
       created_at: new Date().toISOString(),
     });
-  } catch {
-    // falha silenciosa: auditoria não deve quebrar o fluxo principal
+  } catch (err: any) {
+    // falha silenciosa: auditoria não deve quebrar o fluxo principal, mas loga para rastreabilidade
+    console.error("[auditLog] Falha ao gravar log de auditoria:", err?.message || err);
   }
 }

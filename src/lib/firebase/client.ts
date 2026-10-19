@@ -28,7 +28,17 @@ export const firebaseClient = {
     if (typeof window === "undefined") return null;
     try {
       const data = localStorage.getItem(TOKEN_KEY);
-      return data ? JSON.parse(data) : null;
+      if (!data) return null;
+      const parsed = JSON.parse(data) as FirebaseUser & { savedAt?: number };
+      // Verifica expiração: se o token expirou, invalida
+      const now = Date.now();
+      const savedAt = Number(parsed.savedAt || 0);
+      const expiresInMs = Number(parsed.expiresIn || 0) * 1000;
+      if (!savedAt || now - savedAt > expiresInMs) {
+        localStorage.removeItem(TOKEN_KEY);
+        return null;
+      }
+      return parsed;
     } catch {
       return null;
     }
@@ -41,7 +51,7 @@ export const firebaseClient = {
     if (typeof window === "undefined") return;
     try {
       if (auth) {
-        localStorage.setItem(TOKEN_KEY, JSON.stringify(auth));
+        localStorage.setItem(TOKEN_KEY, JSON.stringify({ ...auth, savedAt: Date.now() }));
       } else {
         localStorage.removeItem(TOKEN_KEY);
       }
@@ -285,7 +295,10 @@ export const firebaseClient = {
           arrayValue: {
             values: val.map((item) => {
               if (typeof item === "string") return { stringValue: item };
-              if (typeof item === "number") return { doubleValue: item };
+              if (typeof item === "number") {
+                if (Number.isInteger(item)) return { integerValue: item.toString() };
+                return { doubleValue: item };
+              }
               if (typeof item === "boolean") return { booleanValue: item };
               return { stringValue: JSON.stringify(item) };
             }),
@@ -307,7 +320,11 @@ export const firebaseClient = {
     const result: Record<string, any> = {};
     for (const [key, val] of Object.entries(fields)) {
       if ("stringValue" in val) result[key] = val.stringValue;
-      else if ("integerValue" in val) result[key] = parseInt(val.integerValue, 10);
+      else if ("integerValue" in val) {
+        const n = Number(val.integerValue);
+        // Preserva números grandes (acima de MAX_SAFE_INTEGER) como string para evitar perda de precisão
+        result[key] = Number.isSafeInteger(n) ? n : val.integerValue;
+      }
       else if ("doubleValue" in val) result[key] = val.doubleValue;
       else if ("booleanValue" in val) result[key] = val.booleanValue;
       else if ("nullValue" in val) result[key] = null;
@@ -315,7 +332,10 @@ export const firebaseClient = {
       else if ("arrayValue" in val) {
         result[key] = (val.arrayValue.values || []).map((v: any) => {
           if ("stringValue" in v) return v.stringValue;
-          if ("integerValue" in v) return parseInt(v.integerValue, 10);
+          if ("integerValue" in v) {
+            const n = Number(v.integerValue);
+            return Number.isSafeInteger(n) ? n : v.integerValue;
+          }
           if ("doubleValue" in v) return v.doubleValue;
           if ("booleanValue" in v) return v.booleanValue;
           return v;
@@ -377,25 +397,37 @@ export const firebaseClient = {
   },
 
   /**
-   * Lista documentos de uma coleção
+   * Lista documentos de uma coleção (com paginação automática até esgotar)
    */
   async listDocs<T = Record<string, any>>(collection: string, token?: string): Promise<T[]> {
     try {
       const headers: Record<string, string> = {};
       if (token) headers["Authorization"] = `Bearer ${token}`;
 
-      const url = `${firebaseConfig.firestoreBaseUrl}/${collection}?key=${firebaseConfig.apiKey}&pageSize=100`;
-      const res = await fetch(url, { headers });
-      if (!res.ok) return [];
+      let allDocs: T[] = [];
+      let nextPageToken: string | undefined = token;
 
-      const data = await res.json();
-      if (!data.documents) return [];
+      // Loop de paginação: segue nextPageToken até não haver mais páginas
+      for (let page = 0; page < 10; page++) {
+        const url = `${firebaseConfig.firestoreBaseUrl}/${collection}?key=${firebaseConfig.apiKey}&pageSize=500${nextPageToken ? `&pageToken=${encodeURIComponent(nextPageToken)}` : ""}`;
+        const res = await fetch(url, { headers });
+        if (!res.ok) break;
 
-      return data.documents.map((doc: any) => {
-        const nameParts = doc.name.split("/");
-        const id = nameParts[nameParts.length - 1];
-        return { id, ...this.decodeFirestoreFields(doc.fields) };
-      }) as T[];
+        const data = await res.json();
+        if (!data.documents) break;
+
+        const pageDocs = data.documents.map((doc: any) => {
+          const nameParts = doc.name.split("/");
+          const id = nameParts[nameParts.length - 1];
+          return { id, ...this.decodeFirestoreFields(doc.fields) };
+        }) as T[];
+        allDocs = [...allDocs, ...pageDocs];
+
+        nextPageToken = data.nextPageToken;
+        if (!nextPageToken) break;
+      }
+
+      return allDocs;
     } catch {
       return [];
     }

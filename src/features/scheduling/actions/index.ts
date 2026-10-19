@@ -87,6 +87,23 @@ export async function createAppointment(orgId: string, prevState: any, formData:
   const res = await firebaseClient.setDoc("appointments", appointmentId, appointment);
   if (!res.success) return { error: res.error };
 
+  // Revalidação pós-gravação para mitigar race condition (TOCTOU):
+  // se outro appointment conflitante apareceu entre a leitura e a gravação,
+  // desfaz esta gravação e retorna erro.
+  const allAppsAfter = await firebaseClient.listDocs<any>("appointments");
+  const conflictAfter = allAppsAfter.find((a: any) =>
+    a.id !== appointmentId &&
+    a.company_id === orgId &&
+    a.status !== "cancelled" &&
+    new Date(a.starts_at) < new Date(ends) &&
+    new Date(a.ends_at) > new Date(starts)
+  );
+
+  if (conflictAfter) {
+    await firebaseClient.deleteDoc("appointments", appointmentId);
+    return { error: "Conflito de horário: já existe um compromisso agendado neste período." };
+  }
+
   await auditLog({
     orgId,
     userId: "admin-user",

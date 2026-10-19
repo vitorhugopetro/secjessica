@@ -51,13 +51,14 @@ export function parsePixReceiptText(text: string): PixReceiptParsed {
     if (normalized.includes(kw)) matchesCount++;
   }
 
-  // 1. Extração do Valor (R$ XX,XX ou R$XX.XX)
+  // 1. Extração do Valor (R$ XX,XX ou R$XX.XX ou R$ XXX,XX)
   let amount: number | null = null;
   let formattedAmount: string | null = null;
-  const amountRegex = /(?:r\$\s*|valor\s*:?\s*r?\$\s*)([0-9]{1,3}(?:\.[0-9]{3})*|\d+)[,.]([0-9]{2})/i;
+  const amountRegex = /(?:r\$\s*|valor\s*:?\s*r?\$\s*)([0-9]{1,3}(?:\.[0-9]{3})*|\d+)(?:[,.]([0-9]{2}))?/i;
   const amountMatch = text.match(amountRegex);
   if (amountMatch) {
-    const rawVal = `${amountMatch[1].replace(/\./g, "")}.${amountMatch[2]}`;
+    const centavos = amountMatch[2] ? amountMatch[2] : "00";
+    const rawVal = `${amountMatch[1].replace(/\./g, "")}.${centavos}`;
     amount = parseFloat(rawVal);
     if (!isNaN(amount)) {
       formattedAmount = amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -99,7 +100,9 @@ export function parsePixReceiptText(text: string): PixReceiptParsed {
   if (transactionId !== null) confidenceScore += 15;
   if (date !== null) confidenceScore += 10;
 
-  const isPixReceipt = confidenceScore >= 50;
+  // Exige valor E pelo menos um campo crítico (ID ou data) para evitar falsos positivos
+  const hasCriticalField = transactionId !== null || date !== null;
+  const isPixReceipt = amount !== null && hasCriticalField && confidenceScore >= 50;
 
   const extractedSummary = isPixReceipt
     ? `Comprovante Pix detectado: ${formattedAmount || "Valor não identificado"} em ${date || "Data recente"}${bankName ? ` via ${bankName}` : ""}. ID: ${transactionId || "N/A"}`

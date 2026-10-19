@@ -329,7 +329,7 @@ export async function sendWhatsAppMessage(
   revalidatePath("/agenda");
 
   return {
-    success: true,
+    success: !externalError,
     data: record,
     waLink,
     phone: cleanPhone,

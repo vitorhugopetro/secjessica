@@ -46,6 +46,15 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    // Validação de assinatura do webhook (segurança)
+    const webhookSecret = process.env.WHATSAPP_WEBHOOK_SECRET;
+    if (webhookSecret && process.env.NODE_ENV === "production") {
+      const provided = request.headers.get("x-webhook-secret") || "";
+      if (!provided || provided !== webhookSecret) {
+        return NextResponse.json({ error: "Webhook secret inválido" }, { status: 401 });
+      }
+    }
+
     const body = await request.json();
     const { searchParams } = new URL(request.url);
     const queryCompanyId = searchParams.get("company_id");
@@ -127,12 +136,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (!companyId) {
-      const { data: fallbackInst } = await supabase
-        .from("whatsapp_instances")
-        .select("*")
-        .limit(1)
-        .maybeSingle();
-      companyId = fallbackInst?.company_id || "default";
+      // Não fazer fallback automático para empresa aleatória: rejeita se não identificou a empresa
+      return NextResponse.json({ error: "Empresa não identificada para esta instância" }, { status: 400 });
     }
 
     const orgId: string = companyId || "default";
